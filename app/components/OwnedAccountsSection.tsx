@@ -86,7 +86,7 @@ export default function OwnedAccountsSection() {
     <div className="mb-10">
       <div className="mb-6 text-center">
         <h2 className="text-[24px] font-semibold tracking-tight text-zinc-100 sm:text-[30px]">
-          Current Accounts
+          Active Accounts
         </h2>
         <p className="mt-1 text-[14px] text-zinc-500 sm:text-[15px]">
           Open an account below or jump into an existing one.
@@ -144,7 +144,7 @@ export default function OwnedAccountsSection() {
 
               <div className="mt-4 inline-flex items-center gap-1.5 text-[13px] font-medium text-zinc-300 group-hover:text-zinc-100">
                 <span>Open account</span>
-                <FiArrowUpRight className="h-3.5 w-3.5 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                <FiArrowUpRight className="h-3.5 w-3.5" />
               </div>
             </Link>
           );

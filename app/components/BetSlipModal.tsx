@@ -560,7 +560,7 @@ export default function BetSlipModal({
                 !selectedAccountIds.length ||
                 Boolean(ruleWarning)
               }
-              className="mt-5 h-12 w-full rounded-2xl bg-zinc-100 text-[15px] font-semibold text-zinc-950 transition-opacity disabled:cursor-not-allowed disabled:opacity-40"
+              className="mt-5 h-12 w-full rounded-2xl bg-zinc-100 text-[15px] font-semibold text-zinc-950 transition-opacity disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
             >
               {isPlacing ? "Placing..." : "Place Bet"}
             </button>
