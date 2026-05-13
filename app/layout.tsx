@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import AppSidebar from "./components/AppSidebar";
@@ -18,6 +18,20 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Edge",
   description: "Fund your bets.",
+  manifest: "/manifest.webmanifest",
+  icons: {
+    apple: "/apple-icon.png",
+    icon: "/icon.png",
+  },
+  appleWebApp: {
+    capable: true,
+    title: "Edge",
+    statusBarStyle: "black-translucent",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#09090b",
 };
 
 export default function RootLayout({
@@ -28,11 +42,16 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} h-full bg-[#09090b] antialiased`}
     >
       <body className="relative min-h-screen bg-[#09090b] text-white">
         <Providers>
           <style>{`
+            html,
+            body {
+              background: #09090b;
+            }
+
             @keyframes buttonShimmer {
               0% {
                 transform: translateX(0) skewX(-20deg);
@@ -58,7 +77,9 @@ export default function RootLayout({
           <AppSidebar />
           <TopRightAuth />
 
-          <main className="min-h-screen md:pl-[220px]">{children}</main>
+          <main className="min-h-screen bg-[#09090b] md:pl-[220px]">
+            {children}
+          </main>
         </Providers>
       </body>
     </html>
