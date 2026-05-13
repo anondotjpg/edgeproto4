@@ -118,7 +118,7 @@ export default function PriceHistoryChart({ slug }: Props) {
 
   if (!isLoading && (!data || data.error || chartData.length === 0)) {
     return (
-      <div className="mt-8 min-w-0 rounded-[28px] bg-zinc-950 p-6">
+      <div className="mt-8 min-w-0 rounded-[28px] bg-zinc-950 sm:p-6">
         <div className="text-[12px] font-medium uppercase tracking-[0.18em] text-zinc-500">
           History
         </div>
@@ -130,7 +130,7 @@ export default function PriceHistoryChart({ slug }: Props) {
   }
 
   return (
-    <div className="mt-8 min-w-0 rounded-[28px] bg-zinc-950 p-6">
+    <div className="mt-8 min-w-0 rounded-[28px] bg-zinc-950 sm:p-6">
       <div className="mb-4">
         <div className="text-[12px] font-medium uppercase tracking-[0.18em] text-zinc-500">
           History
