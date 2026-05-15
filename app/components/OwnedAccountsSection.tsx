@@ -4,16 +4,19 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePrivy } from "@privy-io/react-auth";
 import { PLAN_CONFIG, type PlanKey } from "@/lib/plans";
-import { FiArrowUpRight } from "react-icons/fi";
+import { FiArrowUpRight, FiEdit2 } from "react-icons/fi";
 
 type ExistingAccount = {
   id: string;
+  account_name: string | null;
   plan_key: string;
   plan_size: number;
   one_time_fee: number;
   status: string;
   created_at: string;
 };
+
+const MAX_ACCOUNT_NAME_LENGTH = 15;
 
 function getStatusClassName(status: string) {
   const normalizedStatus = status.toLowerCase();
@@ -22,29 +25,36 @@ function getStatusClassName(status: string) {
     return "bg-red-950/60 text-red-400";
   }
 
+  if (normalizedStatus === "passed") {
+    return "bg-emerald-950/60 text-emerald-400";
+  }
+
   return "bg-zinc-900 text-zinc-500";
 }
 
 function AccountSkeletonCard() {
   return (
-    <div className="flex min-h-[58px] items-center justify-between rounded-[14px] bg-zinc-950 px-4 py-3 ring-1 ring-zinc-900">
-      <div className="min-w-0">
+    <div className="flex min-h-[72px] items-center justify-between rounded-[14px] bg-zinc-950 px-4 py-3 ring-1 ring-zinc-900">
+      <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <div className="h-4 w-20 animate-pulse rounded bg-zinc-800" />
+          <div className="h-5 w-24 animate-pulse rounded bg-zinc-800" />
           <div className="h-5 w-16 animate-pulse rounded-full bg-zinc-900" />
         </div>
 
-        <div className="mt-2 h-3 w-14 animate-pulse rounded bg-zinc-900" />
+        <div className="mt-2 h-3 w-24 animate-pulse rounded bg-zinc-900" />
       </div>
 
-      <div className="ml-3 h-7 w-7 shrink-0 animate-pulse rounded-full bg-zinc-900" />
+      <div className="ml-3 flex shrink-0 items-center gap-2">
+        <div className="h-7 w-7 animate-pulse rounded bg-zinc-900" />
+        <div className="h-7 w-7 animate-pulse rounded-full bg-zinc-900" />
+      </div>
     </div>
   );
 }
 
 function EmptyAccountCard({ authenticated }: { authenticated: boolean }) {
   return (
-    <div className="flex min-h-[58px] items-center justify-between rounded-[14px] bg-zinc-950 px-4 py-3 ring-1 ring-zinc-900">
+    <div className="flex min-h-[72px] items-center justify-between rounded-[14px] bg-zinc-950 px-4 py-3 ring-1 ring-zinc-900">
       <div className="min-w-0">
         <div className="text-[14px] font-medium text-zinc-300">
           No active accounts
@@ -64,6 +74,9 @@ export default function OwnedAccountsSection() {
   const { ready, authenticated, getAccessToken } = usePrivy();
   const [accounts, setAccounts] = useState<ExistingAccount[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [editingAccountId, setEditingAccountId] = useState<string | null>(null);
+  const [draftName, setDraftName] = useState("");
+  const [savingAccountId, setSavingAccountId] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -120,12 +133,62 @@ export default function OwnedAccountsSection() {
     };
   }, [ready, authenticated, getAccessToken]);
 
+  async function saveAccountName(accountId: string) {
+    if (savingAccountId) return;
+
+    try {
+      setSavingAccountId(accountId);
+
+      const accessToken = await getAccessToken();
+
+      if (!accessToken) {
+        throw new Error("Missing auth token.");
+      }
+
+      const response = await fetch("/api/accounts/rename", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          accountId,
+          accountName: draftName.slice(0, MAX_ACCOUNT_NAME_LENGTH),
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data?.error || "Unable to rename account.");
+      }
+
+      setAccounts((currentAccounts) =>
+        currentAccounts.map((account) =>
+          account.id === accountId
+            ? {
+                ...account,
+                account_name: data.account?.account_name ?? null,
+              }
+            : account
+        )
+      );
+
+      setEditingAccountId(null);
+      setDraftName("");
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setSavingAccountId(null);
+    }
+  }
+
   const showSkeleton = !ready || isLoading;
   const showEmpty = !showSkeleton && (!authenticated || accounts.length === 0);
   const showAccounts = !showSkeleton && authenticated && accounts.length > 0;
 
   return (
-    <div className="mb-6 min-h-[108px]">
+    <div className="mb-6 min-h-[122px]">
       <div className="mb-3 flex items-center">
         <h2 className="text-[13px] font-medium uppercase tracking-[0.18em] text-zinc-500">
           Active Accounts{" "}
@@ -161,36 +224,120 @@ export default function OwnedAccountsSection() {
               account.one_time_fee
             ).toLocaleString()}`;
 
+            const isEditing = editingAccountId === account.id;
+            const isSaving = savingAccountId === account.id;
+            const accountName = account.account_name?.trim();
+            const displayName = accountName || sizeLabel;
+
             return (
-              <Link
+              <div
                 key={account.id}
-                href={`/accounts/${account.id}`}
-                className="group flex min-h-[58px] items-center justify-between rounded-[14px] bg-zinc-950 px-4 py-3 ring-1 ring-zinc-900 transition-colors hover:bg-zinc-900/80 hover:ring-zinc-800"
+                className="group rounded-[14px] bg-zinc-950 px-4 py-3 ring-1 ring-zinc-900 transition-colors hover:bg-zinc-900/80 hover:ring-zinc-800"
               >
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2">
-                    <div className="text-[17px] font-semibold leading-none tracking-tight text-zinc-100">
-                      {sizeLabel}
-                    </div>
+                {isEditing ? (
+                  <div>
+                    <div className="flex min-h-[48px] items-center gap-2">
+                      <input
+                        value={draftName}
+                        onChange={(event) =>
+                          setDraftName(
+                            event.target.value.slice(
+                              0,
+                              MAX_ACCOUNT_NAME_LENGTH
+                            )
+                          )
+                        }
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter") {
+                            event.preventDefault();
+                            saveAccountName(account.id);
+                          }
 
-                    <div
-                      className={`rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.12em] ${getStatusClassName(
-                        account.status
-                      )}`}
-                    >
-                      {account.status}
+                          if (event.key === "Escape") {
+                            setEditingAccountId(null);
+                            setDraftName("");
+                          }
+                        }}
+                        autoFocus
+                        maxLength={MAX_ACCOUNT_NAME_LENGTH}
+                        placeholder={sizeLabel}
+                        className="min-w-0 flex-1 rounded-lg border border-zinc-800 bg-black/40 px-2 py-1.5 text-[13px] text-zinc-100 outline-none placeholder:text-zinc-600 focus:border-zinc-600"
+                      />
+
+                      <button
+                        type="button"
+                        onClick={() => saveAccountName(account.id)}
+                        disabled={isSaving}
+                        className="cursor-pointer rounded-lg bg-zinc-100 px-2.5 py-1.5 text-[11px] font-semibold text-zinc-950 disabled:opacity-50"
+                      >
+                        {isSaving ? "..." : "Save"}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditingAccountId(null);
+                          setDraftName("");
+                        }}
+                        className="cursor-pointer rounded-lg border border-zinc-800 px-2.5 py-1.5 text-[11px] font-medium text-zinc-400 hover:text-zinc-100"
+                      >
+                        Cancel
+                      </button>
                     </div>
                   </div>
+                ) : (
+                  <div className="flex min-h-[48px] items-center justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <div className="truncate text-[17px] font-semibold leading-none tracking-tight text-zinc-100">
+                          {displayName}
+                        </div>
 
-                  <div className="mt-1 text-[12px] text-zinc-500">
-                    Fee {feeLabel}
+                        <div
+                          className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.12em] ${getStatusClassName(
+                            account.status
+                          )}`}
+                        >
+                          {account.status}
+                        </div>
+                      </div>
+
+                      <div className="mt-1 text-[12px] leading-none text-zinc-500">
+                        {accountName
+                          ? `${sizeLabel} · Fee ${feeLabel}`
+                          : `Fee ${feeLabel}`}
+                      </div>
+                    </div>
+
+                    <div className="ml-3 flex shrink-0 items-center gap-2">
+                      <button
+                        type="button"
+                        aria-label="Rename account"
+                        title="Rename account"
+                        onClick={() => {
+                          setEditingAccountId(account.id);
+                          setDraftName(
+                            (account.account_name ?? "").slice(
+                              0,
+                              MAX_ACCOUNT_NAME_LENGTH
+                            )
+                          );
+                        }}
+                        className="flex h-7 w-7 cursor-pointer items-center justify-center text-zinc-500 transition-colors hover:text-zinc-100"
+                      >
+                        <FiEdit2 className="h-3.5 w-3.5" />
+                      </button>
+
+                      <Link
+                        href={`/accounts/${account.id}`}
+                        className="flex h-7 w-7 items-center justify-center rounded-full bg-zinc-900 text-zinc-400 transition-colors group-hover:bg-zinc-800 group-hover:text-zinc-100"
+                      >
+                        <FiArrowUpRight className="h-3.5 w-3.5" />
+                      </Link>
+                    </div>
                   </div>
-                </div>
-
-                <div className="ml-3 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-zinc-900 text-zinc-400 transition-colors group-hover:bg-zinc-800 group-hover:text-zinc-100">
-                  <FiArrowUpRight className="h-3.5 w-3.5" />
-                </div>
-              </Link>
+                )}
+              </div>
             );
           })}
       </div>

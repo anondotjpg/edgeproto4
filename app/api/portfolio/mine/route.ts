@@ -36,7 +36,7 @@ export async function GET() {
       return NextResponse.json({ error: "User not found." }, { status: 404 });
     }
 
-    const selectFields = `
+    const betSelect = `
       id,
       account_id,
       game_id,
@@ -53,21 +53,16 @@ export async function GET() {
       placed_at,
       settled_at,
 
-      polymarket_event_id,
-      polymarket_event_slug,
-      polymarket_market_id,
       polymarket_condition_id,
-      polymarket_market_slug,
-      polymarket_outcome,
-      polymarket_outcome_index,
       polymarket_token_id,
+      polymarket_outcome,
       polymarket_synced_at,
-      polymarket_resolution_source,
       polymarket_winning_token_id,
       polymarket_winning_outcome,
       polymarket_resolution_error,
 
       challenge_accounts (
+        account_name,
         plan_key,
         plan_size
       )
@@ -75,7 +70,7 @@ export async function GET() {
 
     const { data: openBets, error: openError } = await supabaseAdmin
       .from("bets")
-      .select(selectFields)
+      .select(betSelect)
       .eq("user_id", dbUser.id)
       .eq("status", "open")
       .order("placed_at", { ascending: false });
@@ -84,7 +79,7 @@ export async function GET() {
 
     const { data: pastBets, error: pastError } = await supabaseAdmin
       .from("bets")
-      .select(selectFields)
+      .select(betSelect)
       .eq("user_id", dbUser.id)
       .in("status", ["won", "lost", "void", "cashed_out"])
       .order("settled_at", { ascending: false });
