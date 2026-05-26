@@ -32,29 +32,6 @@ function getStatusLabel(status: string) {
   return status;
 }
 
-function getStatusClassName(status: string) {
-  const normalizedStatus = status.toLowerCase();
-
-  if (
-    normalizedStatus === "active" ||
-    normalizedStatus === "active_dev" ||
-    normalizedStatus === "passed" ||
-    normalizedStatus === "won"
-  ) {
-    return "bg-green-950/35 text-green-500 ring-1 ring-green-950/70";
-  }
-
-  if (normalizedStatus === "failed" || normalizedStatus === "lost") {
-    return "bg-red-900/25 text-red-400 ring-1 ring-red-900/50";
-  }
-
-  if (normalizedStatus === "void") {
-    return "bg-zinc-900 text-zinc-400 ring-1 ring-zinc-800";
-  }
-
-  return "bg-zinc-900 text-zinc-500 ring-1 ring-zinc-800";
-}
-
 function AccountSkeletonCard() {
   return (
     <div className="flex min-h-[72px] items-center justify-between rounded-[14px] bg-zinc-950 px-4 py-3 ring-1 ring-zinc-900">
@@ -338,11 +315,7 @@ export default function OwnedAccountsSection() {
                           {displayName}
                         </div>
 
-                        <div
-                          className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.12em] ${getStatusClassName(
-                            account.status
-                          )}`}
-                        >
+                        <div className="shrink-0 rounded-full bg-zinc-900 px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.12em] text-zinc-500 ring-1 ring-zinc-800">
                           {getStatusLabel(account.status)}
                         </div>
                       </div>
