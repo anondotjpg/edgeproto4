@@ -101,7 +101,7 @@ export default function LoadingAccountPage() {
               <div className="min-w-0 pr-24 sm:pr-32">
                 <SkeletonBlock className="h-10 w-64 max-w-full sm:h-12 sm:w-80" />
 
-                <div className="mt-3 max-w-2xl space-y-2">
+                <div className="mt-3 max-w-2xl space-y-2 hidden md:block">
                   <SkeletonBlock className="h-4 w-full max-w-xl" />
                   <SkeletonBlock className="h-4 w-4/5 max-w-lg" />
                 </div>

@@ -579,7 +579,7 @@ export default async function AccountPage({ params }: AccountPageProps) {
                   {pageTitle}
                 </h1>
 
-                <p className="mt-3 max-w-2xl text-[15px] leading-7 text-zinc-500">
+                <p className="mt-3 max-w-2xl text-[15px] leading-7 text-zinc-500 hidden md:block">
                   Your balance, progress to target, room before failing, and
                   every position tied to this account.
                 </p>
