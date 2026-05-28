@@ -7,7 +7,6 @@ import LeagueTabs from "./components/LeagueTabs";
 type OddsOutcome = {
   name: string;
   price: number;
-  point?: number;
 };
 
 type OddsMarket = {
@@ -16,9 +15,6 @@ type OddsMarket = {
 };
 
 type Bookmaker = {
-  key: string;
-  title: string;
-  last_update: string;
   markets: OddsMarket[];
 };
 
@@ -28,14 +24,12 @@ type TeamInfo = {
   alias?: string;
   record?: string;
   logo?: string;
-  league?: string;
 };
 
 type Game = {
   id: string;
   slug: string;
   sport_key: string;
-  sport_title: string;
   commence_time: string;
   home_team: string;
   away_team: string;
@@ -54,7 +48,6 @@ type LeagueBlock = {
 type ApiResponse = {
   updatedAt: string;
   leagues: LeagueBlock[];
-  error?: string;
 };
 
 const LEAGUES = [
@@ -87,11 +80,18 @@ async function getOdds(): Promise<ApiResponse> {
 }
 
 function getMarket(bookmaker: Bookmaker | undefined, marketKey: string) {
-  return bookmaker?.markets?.find((market) => market.key === marketKey);
+  return bookmaker?.markets.find((market) => market.key === marketKey);
+}
+
+function getOutcomeByName(
+  outcomes: OddsOutcome[] | undefined,
+  teamName: string
+) {
+  return outcomes?.find((outcome) => outcome.name === teamName);
 }
 
 function formatPrice(price?: number) {
-  if (price === undefined || price === null || price === 0) return "—";
+  if (!price) return "—";
   return price > 0 ? `+${price}` : `${price}`;
 }
 
@@ -107,17 +107,22 @@ function formatGameTime(date: string) {
   return `${formatted} EST`;
 }
 
-function getOutcomeByName(
-  outcomes: OddsOutcome[] | undefined,
-  teamName: string
-): OddsOutcome | undefined {
-  return outcomes?.find((outcome) => outcome.name === teamName);
+function getLogoClassName(sportKey: string) {
+  return sportKey === "mlb"
+    ? "h-8 w-8 object-contain"
+    : "h-8 w-8 rounded-sm bg-white/5 object-contain";
+}
+
+function getLogoFallbackClassName(sportKey: string) {
+  return sportKey === "mlb"
+    ? "h-9 w-9 bg-zinc-950"
+    : "h-9 w-9 rounded-sm bg-zinc-950";
 }
 
 function OddsCell({
   value,
   href,
-  isTop,
+  isTop = false,
 }: {
   value: string;
   href: string;
@@ -128,7 +133,7 @@ function OddsCell({
       href={href}
       className={[
         "flex min-h-[56px] items-center justify-center bg-transparent px-3 py-2 text-center transition-colors hover:bg-zinc-800/50",
-        !isTop ? "border-t border-zinc-800/60" : "",
+        isTop ? "" : "border-t border-zinc-800/60",
       ].join(" ")}
     >
       <div className="text-[14px] font-semibold tracking-tight text-zinc-100">
@@ -136,22 +141,6 @@ function OddsCell({
       </div>
     </Link>
   );
-}
-
-function getLogoClassName(sportKey: string) {
-  if (sportKey === "mlb") {
-    return "h-8 w-8 object-contain";
-  }
-
-  return "h-8 w-8 rounded-sm object-contain bg-white/5";
-}
-
-function getLogoFallbackClassName(sportKey: string) {
-  if (sportKey === "mlb") {
-    return "h-9 w-9 bg-zinc-950";
-  }
-
-  return "h-9 w-9 rounded-sm bg-zinc-950";
 }
 
 function TeamRow({
@@ -189,7 +178,7 @@ function TeamRow({
 }
 
 function GameCard({ game }: { game: Game }) {
-  const bookmaker = game.bookmakers?.[0];
+  const bookmaker = game.bookmakers[0];
   const h2h = getMarket(bookmaker, "h2h")?.outcomes;
 
   const awayMoneyline = getOutcomeByName(h2h, game.away_team);
@@ -198,7 +187,7 @@ function GameCard({ game }: { game: Game }) {
 
   return (
     <article className="relative rounded-[24px] bg-zinc-900/30 p-4 pb-12 backdrop-blur-sm">
-      <div className="mb-2 grid grid-cols-[minmax(0,1fr)_96px] gap-0">
+      <div className="mb-2 grid grid-cols-[minmax(0,1fr)_96px]">
         <div className="pl-1 text-[9px] font-medium uppercase tracking-[0.14em] text-zinc-500">
           Teams
         </div>
@@ -256,7 +245,6 @@ export default async function Home({
 }) {
   const data = await getOdds();
   const resolvedSearchParams = await searchParams;
-
   const requestedLeague = resolvedSearchParams?.league;
 
   const selectedLeague: LeagueKey = LEAGUES.some(
@@ -275,80 +263,50 @@ export default async function Home({
   const totalGames = league?.games.length ?? 0;
 
   return (
-    <>
-      <style>{`
-        @keyframes buttonShimmer {
-          0% {
-            transform: translateX(0) skewX(-20deg);
-            opacity: 0;
-          }
-          8% {
-            opacity: 0.42;
-          }
-          24% {
-            opacity: 0.42;
-          }
-          38% {
-            transform: translateX(520%) skewX(-20deg);
-            opacity: 0;
-          }
-          100% {
-            transform: translateX(520%) skewX(-20deg);
-            opacity: 0;
-          }
-        }
-      `}</style>
+    <div className="relative min-h-screen bg-[#09090b] text-white">
+      <div className="relative mx-auto w-full max-w-7xl px-4 py-5 pb-24 sm:px-6 sm:py-6 md:pb-6">
+        <header className="pt-2">
+          <LeagueTabs leagues={LEAGUES} selectedLeague={selectedLeague} />
+        </header>
 
-      <div className="relative min-h-screen bg-[#09090b] text-white">
+        <main className="mt-8 sm:mt-4">
+          <section className="space-y-4">
+            <div className="grid grid-cols-[112px_minmax(0,1fr)_112px] items-end gap-3">
+              <LastUpdatedAgo updatedAt={data.updatedAt} />
 
-        <div className="relative mx-auto w-full max-w-7xl px-4 py-5 pb-24 sm:px-6 sm:py-6 md:pb-6">
-          <header>
-            <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
-              <div className="min-w-0 flex-1">
-                <LeagueTabs leagues={LEAGUES} selectedLeague={selectedLeague} />
+              <div className="min-w-0 text-center">
+                <h2 className="text-[33px] font-semibold leading-none tracking-tight text-zinc-50">
+                  {league?.leagueLabel ?? selectedLeagueMeta.label}
+                </h2>
+
+                <p className="mt-0.5 text-[12px] leading-none text-zinc-400">
+                  {totalGames} game{totalGames === 1 ? "" : "s"}
+                </p>
+              </div>
+
+              <div className="flex w-[112px] justify-end">
+                {league?.error ? (
+                  <div className="rounded-full border border-red-900/60 bg-red-950/60 px-3 py-1 text-[11px] font-medium text-red-400">
+                    {league.error}
+                  </div>
+                ) : null}
               </div>
             </div>
-          </header>
 
-          <div className="mt-8 sm:mt-4">
-            <section className="space-y-4">
-              <div className="grid grid-cols-[112px_minmax(0,1fr)_112px] items-end gap-3">
-                <LastUpdatedAgo updatedAt={data.updatedAt} />
-
-                <div className="min-w-0 text-center">
-                  <h2 className="text-[33px] font-semibold leading-none tracking-tight text-zinc-50">
-                    {league?.leagueLabel ?? selectedLeagueMeta.label}
-                  </h2>
-
-                  <p className="mt-0.5 text-[12px] leading-none text-zinc-400">
-                    {totalGames} game{totalGames === 1 ? "" : "s"}
-                  </p>
-                </div>
-
-                <div className="flex w-[112px] justify-end">
-                  {league?.error ? (
-                    <div className="rounded-full border border-red-900/60 bg-red-950/60 px-3 py-1 text-[11px] font-medium text-red-400">
-                      {league.error}
-                    </div>
-                  ) : null}
-                </div>
+            {!league || league.games.length === 0 ? (
+              <div className="rounded-[24px] bg-zinc-900/40 p-5 text-[13px] text-zinc-400">
+                No active {selectedLeagueMeta.label} markets right now.
               </div>
-
-              {!league || league.games.length === 0 ? (
-                <div className="rounded-[24px] bg-zinc-900/40 p-5 text-[13px] text-zinc-400">
-                  No active {selectedLeagueMeta.label} markets right now.
-                </div>
-              ) : (
-                <div className="grid gap-3 lg:grid-cols-2">
-                  {league.games.map((game) => (
-                    <GameCard key={game.id} game={game} />
-                  ))}
-                </div>
-              )}
-            </section>
-          </div>
-        </div>
+            ) : (
+              <div className="grid gap-3 lg:grid-cols-2">
+                {league.games.map((game) => (
+                  <GameCard key={game.id} game={game} />
+                ))}
+              </div>
+            )}
+          </section>
+        </main>
       </div>
-    </>
+    </div>
   );
 }
