@@ -16,7 +16,7 @@ export default function AppSidebar() {
 
   return (
     <>
-      <aside className="fixed left-0 top-0 hidden h-screen w-[220px] bg-[#09090b] md:block">
+      <aside className="fixed left-0 top-0 z-[999] hidden h-screen w-[220px] bg-[#09090b] md:block">
         <div className="flex h-full w-full flex-col border-r border-zinc-800 bg-[#09090b] px-6">
           <div className="pt-5">
             <div className="flex items-center">
@@ -57,7 +57,7 @@ export default function AppSidebar() {
         </div>
       </aside>
 
-      <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-zinc-800 bg-[#09090b]/95 backdrop-blur md:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-[999] border-t border-zinc-800 bg-[#09090b]/95 backdrop-blur md:hidden">
         <div className="px-4">
           <div className="mx-auto grid h-16 max-w-md grid-cols-4">
             {NAV_LINKS.map((item) => {

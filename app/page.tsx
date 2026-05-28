@@ -92,10 +92,7 @@ function DotPattern({
   return (
     <svg
       aria-hidden="true"
-      className={cn(
-        "pointer-events-none absolute inset-0 h-full w-full fill-zinc-700/80",
-        className
-      )}
+      className={cn("pointer-events-none fill-zinc-700/80", className)}
       {...props}
     >
       <defs>
@@ -350,15 +347,17 @@ export default async function Home({
         }
       `}</style>
 
-      <div className="relative min-h-screen overflow-hidden bg-[#09090b] text-white">
-        <DotPattern
-          width={18}
-          height={18}
-          cx={1}
-          cy={1}
-          cr={1}
-          className="absolute inset-0 z-0 hidden opacity-70 [mask-image:radial-gradient(900px_circle_at_center,white,transparent)] md:block"
-        />
+      <div className="relative min-h-screen bg-[#09090b] text-white">
+        <div className="pointer-events-none fixed inset-y-0 right-0 z-0 hidden overflow-hidden bg-[#09090b] md:left-[220px] md:block">
+          <DotPattern
+            width={18}
+            height={18}
+            cx={1}
+            cy={1}
+            cr={1}
+            className="absolute inset-0 h-full w-full opacity-70 [mask-image:radial-gradient(900px_circle_at_center,white,transparent)]"
+          />
+        </div>
 
         <div className="relative z-10 mx-auto w-full max-w-7xl px-4 py-5 pb-24 sm:px-6 sm:py-6 md:pb-6">
           <header>
