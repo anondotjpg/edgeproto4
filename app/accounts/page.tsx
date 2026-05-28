@@ -1,4 +1,3 @@
-import * as React from "react";
 import ChallengeCta from "../components/ChallengeCta";
 import OwnedAccountsSection from "../components/OwnedAccountsSection";
 import type { PlanKey } from "@/lib/plans";
@@ -18,56 +17,6 @@ type PlanDetail = {
 };
 
 type ButtonStyle = "gold" | "silver" | "default";
-
-type DotPatternProps = React.SVGProps<SVGSVGElement> & {
-  width?: number;
-  height?: number;
-  cx?: number;
-  cy?: number;
-  cr?: number;
-};
-
-function cn(...classes: Array<string | false | null | undefined>) {
-  return classes.filter(Boolean).join(" ");
-}
-
-function DotPattern({
-  width = 18,
-  height = 18,
-  cx = 1,
-  cy = 1,
-  cr = 1,
-  className,
-  ...props
-}: DotPatternProps) {
-  const patternId = React.useId();
-
-  return (
-    <svg
-      aria-hidden="true"
-      className={cn(
-        "pointer-events-none absolute inset-0 h-full w-full fill-zinc-700/80",
-        className
-      )}
-      {...props}
-    >
-      <defs>
-        <pattern
-          id={patternId}
-          width={width}
-          height={height}
-          patternUnits="userSpaceOnUse"
-          x="0"
-          y="0"
-        >
-          <circle cx={cx} cy={cy} r={cr} />
-        </pattern>
-      </defs>
-
-      <rect width="100%" height="100%" fill={`url(#${patternId})`} />
-    </svg>
-  );
-}
 
 const ACCOUNT_PLANS: AccountPlan[] = [
   {
@@ -104,10 +53,7 @@ const PLAN_DETAILS: PlanDetail[] = [
   { label: "Profit Target", value: "30%" },
   { label: "Daily Drawdown", value: "10%" },
   { label: "Total Drawdown", value: "20%" },
-  /*{ label: "Min Trading Days", value: "7 days" },*/
-  /*{ label: "Max Inactivity", value: "14 days" },*/
   { label: "Max Risk/Trade", value: "5%" },
-  /*{ label: "Your Rewards", value: "70%", accent: true },*/
 ];
 
 function DetailRow({
@@ -289,22 +235,13 @@ export default function AccountsPage() {
         }
       `}</style>
 
-      <div className="relative min-h-screen overflow-hidden bg-[#09090b] text-white">
-        <DotPattern
-          width={18}
-          height={18}
-          cx={1}
-          cy={1}
-          cr={1}
-          className="absolute inset-0 z-0 hidden opacity-70 [mask-image:radial-gradient(900px_circle_at_center,white,transparent)] md:block"
-        />
-
+      <div className="relative min-h-screen bg-transparent text-white">
         <div className="relative z-10 flex min-h-screen items-center pt-10 md:pt-0">
           <div className="mx-auto w-full max-w-[1480px] px-5 py-8 pb-24 sm:px-6 md:pb-8">
             <OwnedAccountsSection />
 
-            <div className="mb-7 sm:mb-10 text-center hidden md:block">
-              <h1 className="text-[30px] font-semibold tracking-tight text-zinc-100 sm:text-[38px] italic ">
+            <div className="mb-7 hidden text-center sm:mb-10 md:block">
+              <h1 className="text-[30px] font-semibold tracking-tight text-zinc-100 sm:text-[38px] italic">
                 Find Your Edge
               </h1>
               <p className="text-[15px] text-zinc-500 sm:text-[16px]">
