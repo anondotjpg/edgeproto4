@@ -304,13 +304,13 @@ export default async function Home({
           className="pointer-events-none fixed inset-y-0 right-0 z-[1] hidden overflow-hidden md:left-[220px] md:block"
           style={{
             backgroundImage:
-              "radial-gradient(circle, rgba(161, 161, 170, 0.55) 1px, transparent 1px)",
+              "radial-gradient(circle, rgba(161, 161, 170, 0.35) 1px, transparent 1px)",
             backgroundSize: "18px 18px",
             backgroundPosition: "0 0",
             maskImage:
-              "radial-gradient(900px circle at center, white, transparent)",
+              "radial-gradient(1200px circle at center, rgba(0,0,0,0.96) 0%, rgba(0,0,0,0.9) 26%, rgba(0,0,0,0.72) 44%, rgba(0,0,0,0.48) 60%, rgba(0,0,0,0.24) 76%, rgba(0,0,0,0.08) 90%, transparent 100%)",
             WebkitMaskImage:
-              "radial-gradient(900px circle at center, white, transparent)",
+              "radial-gradient(1200px circle at center, rgba(0,0,0,0.96) 0%, rgba(0,0,0,0.9) 26%, rgba(0,0,0,0.72) 44%, rgba(0,0,0,0.48) 60%, rgba(0,0,0,0.24) 76%, rgba(0,0,0,0.08) 90%, transparent 100%)",
           }}
         >
           <div className="absolute inset-0 bg-[#09090b]/25" />
