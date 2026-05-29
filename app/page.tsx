@@ -329,7 +329,7 @@ export default async function Home({
             <div className="grid grid-cols-[112px_minmax(0,1fr)_112px] items-end gap-3">
               <LastUpdatedAgo updatedAt={data.updatedAt} />
 
-              <div className="min-w-0 text-center">
+              <div className="hidden min-w-0 text-center sm:block">
                 <h2 className="text-[33px] font-semibold leading-none tracking-tight text-zinc-50">
                   {league?.leagueLabel ?? selectedLeagueMeta.label}
                 </h2>
@@ -341,7 +341,7 @@ export default async function Home({
 
               <div className="flex w-[112px] justify-end">
                 {league?.error ? (
-                  <div className="rounded-full border border-red-900/60 bg-red-950/60 px-3 py-1 text-[11px] font-medium text-red-400">
+                  <div className="hidden rounded-full border border-red-900/60 bg-red-950/60 px-3 py-1 text-[11px] font-medium text-red-400 sm:block">
                     {league.error}
                   </div>
                 ) : null}
