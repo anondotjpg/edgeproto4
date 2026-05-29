@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "sonner";
 import { usePrivy } from "@privy-io/react-auth";
@@ -11,6 +11,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "../components/ui/drawer";
+import { Slider } from "../components/ui/slider";
 
 type OwnedAccount = {
   id: string;
@@ -89,60 +90,6 @@ function useIsMobile() {
   }, []);
 
   return isMobile;
-}
-
-function useKeyboardAwareDrawer(active: boolean) {
-  const contentRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!active) return;
-
-    const viewport = window.visualViewport;
-    const el = contentRef.current;
-    if (!viewport || !el) return;
-
-    // Capture as guaranteed non-null locals for use inside the closure.
-    const vp: VisualViewport = viewport;
-    const node: HTMLDivElement = el;
-
-    function update() {
-      // How much of the layout viewport the keyboard is covering.
-      const keyboardHeight = Math.max(
-        0,
-        window.innerHeight - vp.height - vp.offsetTop
-      );
-
-      // Lift the drawer so its bottom edge sits right on top of the keyboard.
-      node.style.bottom = `${keyboardHeight}px`;
-
-      // Keep the whole drawer inside the *visible* area so it can scroll
-      // instead of hiding content behind the keyboard.
-      node.style.setProperty("max-height", `${vp.height}px`, "important");
-    }
-
-    update();
-    vp.addEventListener("resize", update);
-    vp.addEventListener("scroll", update);
-
-    return () => {
-      vp.removeEventListener("resize", update);
-      vp.removeEventListener("scroll", update);
-      // Reset so the closed drawer / next open starts clean.
-      node.style.bottom = "";
-      node.style.removeProperty("max-height");
-    };
-  }, [active]);
-
-  return contentRef;
-}
-
-function parseAmount(value: string) {
-  const normalized = value.replace(/[^0-9.]/g, "");
-  const parts = normalized.split(".");
-
-  if (parts.length <= 1) return normalized;
-
-  return `${parts[0]}.${parts.slice(1).join("").slice(0, 2)}`;
 }
 
 function parseOdds(value: string) {
@@ -240,7 +187,8 @@ function BetSlipContent({
   selectedAccountIds,
   isLoadingAccounts,
   isPlacing,
-  amount,
+  amountValue,
+  maxBetAmount,
   possiblePayout,
   statusMessage,
   statusTone,
@@ -263,7 +211,8 @@ function BetSlipContent({
   selectedAccountIds: string[];
   isLoadingAccounts: boolean;
   isPlacing: boolean;
-  amount: string;
+  amountValue: number;
+  maxBetAmount: number;
   possiblePayout: string;
   statusMessage: string | null;
   statusTone: "warning" | "error" | null;
@@ -272,9 +221,11 @@ function BetSlipContent({
   showCloseButton: boolean;
   onClose: () => void;
   onToggleAccount: (accountId: string) => void;
-  onAmountChange: (value: string) => void;
+  onAmountChange: (value: number | number[]) => void;
   onPlaceBet: () => void;
 }) {
+  const sliderDisabled = maxBetAmount <= 0;
+
   return (
     <>
       {mobileLayout ? (
@@ -441,33 +392,52 @@ function BetSlipContent({
         </div>
       </div>
 
-      <label className="mt-5 block">
-        <span className="text-sm font-medium text-zinc-300">Bet amount</span>
+      <div className="mt-5">
+        <div className="flex h-[18px] items-center justify-between gap-3">
+          <span className="text-sm font-medium leading-[18px] text-zinc-300">
+            Bet amount
+          </span>
 
-        <div className="mt-2 flex h-12 items-center rounded-2xl border border-zinc-800 bg-black/30 px-4 focus-within:border-zinc-600">
-          <span className="text-zinc-500">$</span>
-
-          <input
-            value={amount}
-            onChange={(event) => onAmountChange(event.target.value)}
-            onFocus={(event) => {
-              const target = event.target;
-              setTimeout(() => {
-                target.scrollIntoView({ block: "center", behavior: "smooth" });
-              }, 300);
-            }}
-            placeholder="0.00"
-            inputMode="decimal"
-            maxLength={7}
-            className="h-full min-w-0 flex-1 bg-transparent px-2 text-lg font-semibold text-white outline-none placeholder:text-zinc-600"
-          />
+          <span className="text-[12px] leading-[18px] text-zinc-500">
+            Max{" "}
+            <span className="font-semibold text-zinc-300">
+              {formatMoney(maxBetAmount)}
+            </span>
+          </span>
         </div>
 
-        <div className="mt-1 text-right text-[12px] text-zinc-500">
-          pot. payout{" "}
-          <span className="font-semibold text-zinc-300">{possiblePayout}</span>
+        <div className="mt-2 rounded-2xl border border-zinc-800 bg-black/30 p-4">
+          <div className="flex items-end justify-between gap-3">
+            <div className="text-2xl font-semibold tracking-tight text-zinc-100">
+              {formatMoney(amountValue)}
+            </div>
+
+            <div className="pb-1 text-right text-[12px] text-zinc-500">
+              pot. payout{" "}
+              <span className="font-semibold text-zinc-300">
+                {possiblePayout}
+              </span>
+            </div>
+          </div>
+
+          <div className="mt-4">
+            <Slider
+              value={amountValue}
+              min={0}
+              max={Math.max(maxBetAmount, 1)}
+              step={1}
+              disabled={sliderDisabled}
+              onValueChange={onAmountChange}
+              className="py-4 [&_[data-slot=slider-range]]:bg-zinc-100 [&_[data-slot=slider-track]]:bg-zinc-800 [&_[data-slot=slider-thumb]]:size-4 [&_[data-slot=slider-thumb]]:border-zinc-300 [&_[data-slot=slider-thumb]]:bg-zinc-100"
+            />
+          </div>
+
+          <div className="flex items-center justify-between text-[11px] text-zinc-500">
+            <span>$0</span>
+            <span>{formatMoney(maxBetAmount)}</span>
+          </div>
         </div>
-      </label>
+      </div>
 
       <AnimatePresence initial={false}>
         {statusMessage ? (
@@ -498,8 +468,7 @@ function BetSlipContent({
         onClick={onPlaceBet}
         disabled={
           isPlacing ||
-          !amount ||
-          Number(amount) <= 0 ||
+          amountValue <= 0 ||
           !selectedAccountIds.length ||
           Boolean(ruleWarning)
         }
@@ -542,15 +511,26 @@ export default function BetSlipModal({
   const [isPlacing, setIsPlacing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Only run the visualViewport listener when the mobile drawer is open.
-  const drawerContentRef = useKeyboardAwareDrawer(open && isMobile);
-
   const numericOdds = parseOdds(odds);
   const stake = Number(amount);
+  const amountValue = Number.isFinite(stake) ? stake : 0;
 
   const selectedAccounts = useMemo(() => {
     return accounts.filter((account) => selectedAccountIds.includes(account.id));
   }, [accounts, selectedAccountIds]);
+
+  const maxBetAmount = useMemo(() => {
+    if (!selectedAccounts.length) return 0;
+
+    const accountMaxes = selectedAccounts.map((account) => {
+      const maxRiskAmount = getMaxRiskAmount(account);
+      const currentBalance = Number(account.current_balance ?? 0);
+
+      return Math.max(0, Math.min(maxRiskAmount, currentBalance));
+    });
+
+    return Math.floor(Math.min(...accountMaxes));
+  }, [selectedAccounts]);
 
   const possiblePayout = useMemo(() => {
     if (!stake || Number.isNaN(stake)) return "—";
@@ -688,6 +668,19 @@ export default function BetSlipModal({
     };
   }, [open, ready, authenticated, getAccessToken]);
 
+  useEffect(() => {
+    if (!open) return;
+
+    if (!selectedAccounts.length) {
+      if (amount) setAmount("");
+      return;
+    }
+
+    if (amountValue > maxBetAmount) {
+      setAmount(maxBetAmount > 0 ? String(maxBetAmount) : "");
+    }
+  }, [amount, amountValue, maxBetAmount, open, selectedAccounts.length]);
+
   function toggleAccount(accountId: string) {
     setSelectedAccountIds((current) =>
       current.includes(accountId)
@@ -696,13 +689,15 @@ export default function BetSlipModal({
     );
   }
 
-  function handleAmountChange(value: string) {
-    const parsed = parseAmount(value);
-    const digitsOnly = parsed.replace(/\D/g, "");
+  function handleSliderAmountChange(value: number | number[]) {
+    const rawValue = Array.isArray(value) ? value[0] : value;
+    const nextRawValue = Number(rawValue ?? 0);
 
-    if (digitsOnly.length <= 6) {
-      setAmount(parsed);
-    }
+    const nextValue = Math.round(
+      Math.min(Math.max(nextRawValue, 0), Math.max(maxBetAmount, 0))
+    );
+
+    setAmount(nextValue > 0 ? String(nextValue) : "");
   }
 
   async function placeBet() {
@@ -821,7 +816,8 @@ export default function BetSlipModal({
       selectedAccountIds={selectedAccountIds}
       isLoadingAccounts={isLoadingAccounts}
       isPlacing={isPlacing}
-      amount={amount}
+      amountValue={amountValue}
+      maxBetAmount={maxBetAmount}
       possiblePayout={possiblePayout}
       statusMessage={statusMessage}
       statusTone={statusTone}
@@ -830,7 +826,7 @@ export default function BetSlipModal({
       showCloseButton={!isMobile}
       onClose={closeBetSlip}
       onToggleAccount={toggleAccount}
-      onAmountChange={handleAmountChange}
+      onAmountChange={handleSliderAmountChange}
       onPlaceBet={placeBet}
     />
   );
@@ -844,12 +840,9 @@ export default function BetSlipModal({
           open={open}
           onOpenChange={handleOpenChange}
           repositionInputs={false}
+          handleOnly
         >
-          <DrawerContent
-            ref={drawerContentRef}
-            overlayClassName="bg-zinc-950 supports-backdrop-filter:backdrop-blur-none data-open:fade-in-0"
-            className="border-zinc-800 bg-zinc-950 text-white outline-none ring-0 focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 data-[state=open]:outline-none"
-          >
+          <DrawerContent className="border-zinc-800 bg-zinc-950 text-white outline-none ring-0 focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 data-[state=open]:outline-none data-[vaul-drawer-direction=bottom]:max-h-[calc(100svh-16px)]">
             <DrawerHeader className="sr-only">
               <DrawerTitle>Place Bet</DrawerTitle>
               <DrawerDescription>
@@ -857,10 +850,13 @@ export default function BetSlipModal({
               </DrawerDescription>
             </DrawerHeader>
 
-            <div className="mx-auto flex max-h-full w-full max-w-2xl flex-col px-5 pb-[max(18px,env(safe-area-inset-bottom))] pt-2">
-              <div className="mx-auto mb-5 h-1.5 w-12 shrink-0 rounded-full bg-zinc-800" />
+            <div className="mx-auto w-full max-w-2xl bg-zinc-950 px-5 pb-[max(18px,env(safe-area-inset-bottom))] pt-2">
+              <div
+                data-vaul-handle
+                className="mx-auto mb-5 h-1.5 w-12 shrink-0 rounded-full bg-zinc-800"
+              />
 
-              <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-1">
+              <div className="max-h-[calc(100svh-92px)] overflow-y-auto overscroll-contain pb-1">
                 {content}
               </div>
             </div>
