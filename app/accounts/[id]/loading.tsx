@@ -35,18 +35,6 @@ function RuleSkeleton({ label }: { label: string }) {
         </div>
 
         <SkeletonBlock className="h-2 w-full rounded-full" />
-
-        <div className="mt-3 grid grid-cols-2 gap-2">
-          <div className="rounded-2xl bg-black/30 p-3">
-            <div className="text-[11px] text-zinc-600">Fail floor</div>
-            <SkeletonBlock className="mt-2 h-4 w-20" />
-          </div>
-
-          <div className="rounded-2xl bg-black/30 p-3">
-            <div className="text-[11px] text-zinc-600">Rule equity</div>
-            <SkeletonBlock className="mt-2 h-4 w-20" />
-          </div>
-        </div>
       </div>
 
       <SkeletonBlock className="mt-4 h-3 w-full" />

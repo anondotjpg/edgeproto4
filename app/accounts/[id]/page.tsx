@@ -298,22 +298,6 @@ function RuleRoomCard({
           value={usedPercent}
           tone={breached ? "danger" : "default"}
         />
-
-        <div className="mt-3 grid grid-cols-2 gap-2">
-          <div className="rounded-2xl bg-black/30 p-3">
-            <div className="text-[11px] text-zinc-600">Fail floor</div>
-            <div className="mt-1 text-[14px] font-semibold text-red-400">
-              {formatMoney(floor)}
-            </div>
-          </div>
-
-          <div className="rounded-2xl bg-black/30 p-3">
-            <div className="text-[11px] text-zinc-600">Rule equity</div>
-            <div className="mt-1 text-[14px] font-semibold text-zinc-100">
-              {formatMoney(current)}
-            </div>
-          </div>
-        </div>
       </div>
 
       <p className="mt-4 text-[13px] leading-6 text-zinc-500">{description}</p>
