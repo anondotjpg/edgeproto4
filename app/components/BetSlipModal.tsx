@@ -205,8 +205,6 @@ function BetSlipContent({
   onClose,
   onToggleAccount,
   onAmountChange,
-  onAmountFocus,
-  onAmountBlur,
   onPlaceBet,
 }: {
   team: string;
@@ -230,8 +228,6 @@ function BetSlipContent({
   onClose: () => void;
   onToggleAccount: (accountId: string) => void;
   onAmountChange: (value: string) => void;
-  onAmountFocus: () => void;
-  onAmountBlur: () => void;
   onPlaceBet: () => void;
 }) {
   return (
@@ -409,8 +405,6 @@ function BetSlipContent({
           <input
             value={amount}
             onChange={(event) => onAmountChange(event.target.value)}
-            onFocus={onAmountFocus}
-            onBlur={onAmountBlur}
             placeholder="0.00"
             inputMode="decimal"
             maxLength={7}
@@ -496,7 +490,6 @@ export default function BetSlipModal({
   const [isLoadingAccounts, setIsLoadingAccounts] = useState(false);
   const [isPlacing, setIsPlacing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isAmountFocused, setIsAmountFocused] = useState(false);
 
   const numericOdds = parseOdds(odds);
   const stake = Number(amount);
@@ -560,7 +553,6 @@ export default function BetSlipModal({
 
   function closeBetSlip() {
     setOpen(false);
-    setIsAmountFocused(false);
   }
 
   function handleOpenChange(nextOpen: boolean) {
@@ -734,7 +726,6 @@ export default function BetSlipModal({
       setOpen(false);
       setAmount("");
       setSelectedAccountIds([]);
-      setIsAmountFocused(false);
     } catch (err) {
       console.error(err);
       setError(err instanceof Error ? err.message : "Something went wrong.");
@@ -786,8 +777,6 @@ export default function BetSlipModal({
       onClose={closeBetSlip}
       onToggleAccount={toggleAccount}
       onAmountChange={handleAmountChange}
-      onAmountFocus={() => setIsAmountFocused(true)}
-      onAmountBlur={() => setIsAmountFocused(false)}
       onPlaceBet={placeBet}
     />
   );
@@ -802,14 +791,7 @@ export default function BetSlipModal({
           onOpenChange={handleOpenChange}
           repositionInputs={false}
         >
-          <DrawerContent
-            style={{
-              boxShadow: isAmountFocused
-                ? "0 700px 0 700px rgb(9 9 11)"
-                : "none",
-            }}
-            className="overflow-visible border-zinc-800 bg-zinc-950 text-white outline-none ring-0 focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 data-[state=open]:outline-none data-[vaul-drawer-direction=bottom]:max-h-none"
-          >
+          <DrawerContent className="overflow-visible border-zinc-800 bg-zinc-950 text-white outline-none ring-0 focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 data-[state=open]:outline-none data-[vaul-drawer-direction=bottom]:max-h-none after:pointer-events-none after:absolute after:inset-x-0 after:top-full after:h-[140svh] after:bg-zinc-950 after:content-[''] before:pointer-events-none before:absolute before:inset-x-0 before:top-[calc(100%-1px)] before:h-[140svh] before:bg-zinc-950 before:content-['']">
             <DrawerHeader className="sr-only">
               <DrawerTitle>Place Bet</DrawerTitle>
               <DrawerDescription>
@@ -817,10 +799,10 @@ export default function BetSlipModal({
               </DrawerDescription>
             </DrawerHeader>
 
-            <div className="mx-auto flex h-[82svh] w-full max-w-2xl flex-col bg-zinc-950 px-5 pb-[max(18px,env(safe-area-inset-bottom))] pt-2">
-              <div className="mx-auto mb-5 h-1.5 w-12 shrink-0 rounded-full bg-zinc-800" />
+            <div className="mx-auto w-full max-w-2xl px-5 pb-[max(18px,env(safe-area-inset-bottom))] pt-2">
+              <div className="mx-auto mb-5 h-1.5 w-12 rounded-full bg-zinc-800" />
 
-              <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-1">
+              <div className="max-h-[calc(100svh-92px)] overflow-y-auto overscroll-contain pb-1">
                 {content}
               </div>
             </div>
