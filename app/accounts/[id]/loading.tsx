@@ -115,8 +115,6 @@ export default function LoadingAccountPage() {
   return (
     <div className="min-h-screen bg-[#09090b] px-4 pb-24 pt-6 text-white sm:px-6 md:pb-12 md:pt-10">
       <div className="mx-auto mt-7 w-full max-w-6xl">
-        <div className="mb-2 h-[38px]" />
-
         <section className="h-[536px] rounded-[32px] bg-zinc-950/90 p-5 sm:h-[560px] sm:p-7 lg:h-[294px]">
           <div className="grid h-full gap-6 lg:grid-cols-[1.15fr_0.85fr] lg:items-end">
             <div className="min-w-0">
@@ -129,8 +127,8 @@ export default function LoadingAccountPage() {
                   Rule equity
                 </div>
 
-                <div className="mt-2 h-[60px] sm:h-[76px]">
-                  <SkeletonBlock className="h-[56px] w-64 max-w-full sm:h-[72px] sm:w-80" />
+                <div className="mt-2 h-[64px] sm:h-[82px]">
+                  <SkeletonBlock className="h-[60px] w-64 max-w-full sm:h-[78px] sm:w-80" />
                 </div>
 
                 <SkeletonBlock className="mt-3 h-4 w-36" />

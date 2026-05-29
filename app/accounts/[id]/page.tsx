@@ -228,12 +228,32 @@ function RuleRoomCard({
   room,
   limit,
   description,
+  isAccountFailed,
 }: {
   title: string;
   room: number;
   limit: number;
   description: string;
+  isAccountFailed: boolean;
 }) {
+  if (isAccountFailed) {
+    return (
+      <div className="flex h-[238px] items-center justify-center rounded-[26px] bg-zinc-950/80 p-5 ring-1 ring-zinc-900">
+        <div className="text-center">
+          <div className="text-[13px] font-medium text-zinc-500">{title}</div>
+
+          <div className="mt-3 pb-1 text-[32px] font-semibold leading-[1.08] tracking-tight text-red-400">
+            Failed
+          </div>
+
+          <div className="mt-1 text-[13px] text-zinc-500">
+            Loss limit breached
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const breached = room <= 0;
   const safeRoom = Math.max(room, 0);
 
@@ -523,18 +543,11 @@ export default async function AccountPage({ params }: AccountPageProps) {
 
   const accountStatus = String(account.status);
   const isPassed = accountStatus === "passed";
+  const isAccountFailed = accountStatus === "failed";
 
   return (
     <div className="min-h-screen bg-[#09090b] px-4 pb-24 pt-6 text-white sm:px-6 md:pb-12 md:pt-10">
       <div className="mx-auto mt-7 w-full max-w-6xl">
-        <div className="mb-2 h-[38px]">
-          {account.failure_reason ? (
-            <div className="w-min whitespace-nowrap rounded-[22px] bg-red-900/20 px-3 py-1.5 text-[14px] leading-6 text-red-400 ring-1 ring-red-900/50">
-              {account.failure_reason}
-            </div>
-          ) : null}
-        </div>
-
         <section className="h-[536px] rounded-[32px] bg-zinc-950/90 p-5 sm:h-[560px] sm:p-7 lg:h-[294px]">
           <div className="grid h-full gap-6 lg:grid-cols-[1.15fr_0.85fr] lg:items-end">
             <div className="min-w-0">
@@ -549,7 +562,7 @@ export default async function AccountPage({ params }: AccountPageProps) {
                   Rule equity
                 </div>
 
-                <div className="mt-2 h-[60px] sm:h-[76px]">
+                <div className="mt-2 h-[64px] sm:h-[82px]">
                   <div className="pb-1 text-[52px] font-semibold leading-[1.08] tracking-tight text-zinc-100 sm:text-[68px]">
                     {formatMoney(ruleEquity)}
                   </div>
@@ -674,6 +687,7 @@ export default async function AccountPage({ params }: AccountPageProps) {
             )}. If rule equity reaches ${formatMoney(
               dailyFloor
             )}, this account fails the daily loss rule.`}
+            isAccountFailed={isAccountFailed}
           />
 
           <RuleRoomCard
@@ -685,6 +699,7 @@ export default async function AccountPage({ params }: AccountPageProps) {
             )}. If rule equity reaches ${formatMoney(
               totalFloor
             )}, this account fails the total loss rule.`}
+            isAccountFailed={isAccountFailed}
           />
         </section>
 
