@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-  type ReactNode,
-} from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePrivy } from "@privy-io/react-auth";
 
@@ -196,7 +189,6 @@ function BetCardSkeleton({ active }: { active?: boolean }) {
 
         <div className="flex shrink-0 items-center gap-2">
           <SkeletonBlock className="h-7 w-16 rounded-full" />
-          {active ? <SkeletonBlock className="h-7 w-14 rounded-xl" /> : null}
         </div>
       </div>
 
@@ -301,41 +293,9 @@ function StatusPill({ status }: { status: string }) {
   );
 }
 
-function SyncButton({
-  onClick,
-  disabled,
-  isSyncing,
-}: {
-  onClick: () => void;
-  disabled: boolean;
-  isSyncing?: boolean;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      className="h-7 shrink-0 rounded-xl bg-black/30 px-2.5 text-[11px] font-medium text-zinc-300 ring-1 ring-zinc-800 transition-colors hover:bg-zinc-900 disabled:cursor-not-allowed disabled:opacity-50"
-    >
-      {isSyncing ? "Syncing" : "Sync"}
-    </button>
-  );
-}
-
-function BetCard({
-  bet,
-  active,
-  onSyncPolymarket,
-  isSyncing,
-}: {
-  bet: Bet;
-  active?: boolean;
-  onSyncPolymarket?: (betId: string) => Promise<void>;
-  isSyncing?: boolean;
-}) {
+function BetCard({ bet, active }: { bet: Bet; active?: boolean }) {
   const pnl = getBetPnl(bet);
   const displayStatus = bet.result ?? bet.status;
-  const hasPolymarketData = Boolean(bet.polymarket_condition_id);
 
   return (
     <div className="rounded-[22px] bg-zinc-950/80 p-4 ring-1 ring-zinc-900">
@@ -359,14 +319,6 @@ function BetCard({
 
         <div className="flex shrink-0 items-center gap-2">
           <StatusPill status={displayStatus} />
-
-          {active && onSyncPolymarket ? (
-            <SyncButton
-              onClick={() => onSyncPolymarket(bet.id)}
-              disabled={Boolean(isSyncing) || !hasPolymarketData}
-              isSyncing={isSyncing}
-            />
-          ) : null}
         </div>
       </div>
 
@@ -423,11 +375,7 @@ export default function PortfolioClient() {
   const [openBets, setOpenBets] = useState<Bet[]>([]);
   const [pastBets, setPastBets] = useState<Bet[]>([]);
   const [loading, setLoading] = useState(true);
-  const [syncingBetId, setSyncingBetId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-
-  const contentRef = useRef<HTMLDivElement | null>(null);
-  const [contentMinHeight, setContentMinHeight] = useState<number | null>(null);
 
   const hasAnyBets = openBets.length > 0 || pastBets.length > 0;
 
@@ -497,194 +445,123 @@ export default function PortfolioClient() {
     }
   }
 
-  async function syncPolymarketBet(betId: string) {
-    if (syncingBetId) return;
-
-    try {
-      setSyncingBetId(betId);
-      setError(null);
-
-      const accessToken = await getAccessToken();
-
-      if (!accessToken) {
-        throw new Error("Missing auth token.");
-      }
-
-      const response = await fetch("/api/bets/sync-polymarket", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify({ betId }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        if (response.status === 409) {
-          setError(data?.reason || "Market has not resolved on Polymarket yet.");
-
-          await loadPortfolio({ silent: true });
-          return;
-        }
-
-        throw new Error(data?.error || "Unable to sync Polymarket result.");
-      }
-
-      await loadPortfolio({ silent: true });
-    } catch (err) {
-      console.error(err);
-      setError(
-        err instanceof Error ? err.message : "Unable to sync Polymarket result."
-      );
-
-      await loadPortfolio({ silent: true });
-    } finally {
-      setSyncingBetId(null);
-    }
-  }
-
-  useLayoutEffect(() => {
-    if (!ready || loading) {
-      const height = contentRef.current?.getBoundingClientRect().height;
-
-      if (height) {
-        setContentMinHeight((current) =>
-          Math.max(current ?? 0, Math.ceil(height))
-        );
-      }
-    }
-  }, [ready, loading]);
-
   useEffect(() => {
     loadPortfolio();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready, authenticated]);
 
   return (
-    <div className="mx-auto w-full max-w-7xl px-5 py-8 pb-24 sm:px-6 md:py-10">
+    <div className="mx-auto w-full max-w-7xl px-5 pt-8 pb-24 sm:px-6 md:py-10 md:pb-24">
       <div className="mb-7 sm:mb-8">
         <h1 className="text-[34px] font-semibold tracking-tight text-zinc-100">
           Portfolio
         </h1>
 
         <p className="mt-2 text-sm text-zinc-500">
-          View active and past positions across your accounts.
+          View active and past positions across your accounts
         </p>
       </div>
 
-      <div
-        ref={contentRef}
-        style={contentMinHeight ? { minHeight: contentMinHeight } : undefined}
-      >
-        {!ready || loading ? (
-          <PortfolioSkeleton />
-        ) : !authenticated ? (
-          <EmptyState
-            title="Sign in to view your portfolio"
-            description="Your active and past positions will appear here once you sign in."
-            action={
-              <button
-                type="button"
-                onClick={login}
-                className="rounded-xl bg-zinc-100 px-4 py-2 text-sm font-semibold text-zinc-950"
-              >
-                Sign in
-              </button>
-            }
-          />
-        ) : (
-          <>
-            {error ? (
-              <div className="mb-5 rounded-[20px] bg-red-950/20 p-4 text-sm text-red-300 ring-1 ring-red-950">
-                {error}
-              </div>
-            ) : null}
+      {!ready || loading ? (
+        <PortfolioSkeleton />
+      ) : !authenticated ? (
+        <EmptyState
+          title="Sign in to view your portfolio"
+          description="Your active and past positions will appear here once you sign in."
+          action={
+            <button
+              type="button"
+              onClick={login}
+              className="rounded-xl bg-zinc-100 px-4 py-2 text-sm font-semibold text-zinc-950"
+            >
+              Sign in
+            </button>
+          }
+        />
+      ) : (
+        <>
+          {error ? (
+            <div className="mb-5 rounded-[20px] bg-red-950/20 p-4 text-sm text-red-300 ring-1 ring-red-950">
+              {error}
+            </div>
+          ) : null}
 
-            <StatsGrid>
-              <StatItem label="Active" value={totals.activeCount} />
-              <StatItem label="Past" value={totals.pastCount} />
-              <StatItem label="Risk" value={formatMoney(totals.activeRisk)} />
-            </StatsGrid>
+          <StatsGrid>
+            <StatItem label="Active" value={totals.activeCount} />
+            <StatItem label="Past" value={totals.pastCount} />
+            <StatItem label="Risk" value={formatMoney(totals.activeRisk)} />
+          </StatsGrid>
 
-            {!hasAnyBets ? (
-              <EmptyState
-                title="No positions yet"
-                description="Once you place a bet from an event page, active positions will show here. Settled bets will move into your past positions."
-                action={
-                  <Link
-                    href="/"
-                    className="inline-flex rounded-xl bg-black/30 px-4 py-2 text-sm font-medium text-zinc-300 ring-1 ring-zinc-800 transition-colors hover:bg-zinc-900 hover:text-zinc-100"
-                  >
-                    Browse markets
-                  </Link>
-                }
-              />
-            ) : (
-              <>
-                <section>
-                  <div className="mb-4 flex items-end justify-between gap-4">
-                    <h2 className="text-2xl font-semibold tracking-tight text-zinc-100">
-                      Active Positions
-                    </h2>
-
-                    <div className="text-sm text-zinc-500">
-                      pot. payout: {formatMoney(totals.possiblePayout)}
-                    </div>
-                  </div>
-
-                  {openBets.length ? (
-                    <div className="grid gap-3 lg:grid-cols-2">
-                      {openBets.map((bet) => (
-                        <BetCard
-                          key={bet.id}
-                          bet={bet}
-                          active
-                          onSyncPolymarket={syncPolymarketBet}
-                          isSyncing={syncingBetId === bet.id}
-                        />
-                      ))}
-                    </div>
-                  ) : (
-                    <EmptyState
-                      title="No active positions"
-                      description="You do not have any open bets right now. New bets will appear here until they settle."
-                      action={
-                        <Link
-                          href="/"
-                          className="inline-flex rounded-xl bg-black/30 px-4 py-2 text-sm font-medium text-zinc-300 ring-1 ring-zinc-800 transition-colors hover:bg-zinc-900 hover:text-zinc-100"
-                        >
-                          Browse markets
-                        </Link>
-                      }
-                    />
-                  )}
-                </section>
-
-                <section className="mt-10">
-                  <h2 className="mb-4 text-2xl font-semibold tracking-tight text-zinc-100">
-                    Past Positions
+          {!hasAnyBets ? (
+            <EmptyState
+              title="No positions yet"
+              description="Once you place a bet from an event page, active positions will show here. Settled bets will move into your past positions."
+              action={
+                <Link
+                  href="/"
+                  className="inline-flex rounded-xl bg-black/30 px-4 py-2 text-sm font-medium text-zinc-300 ring-1 ring-zinc-800 transition-colors hover:bg-zinc-900 hover:text-zinc-100"
+                >
+                  Browse markets
+                </Link>
+              }
+            />
+          ) : (
+            <>
+              <section>
+                <div className="mb-4 flex items-end justify-between gap-4">
+                  <h2 className="text-2xl font-semibold tracking-tight text-zinc-100">
+                    Active Positions
                   </h2>
 
-                  {pastBets.length ? (
-                    <div className="grid gap-3 lg:grid-cols-2">
-                      {pastBets.map((bet) => (
-                        <BetCard key={bet.id} bet={bet} />
-                      ))}
-                    </div>
-                  ) : (
-                    <EmptyState
-                      title="No past positions"
-                      description="Settled wins, losses, and voids will appear here after positions close."
-                    />
-                  )}
-                </section>
-              </>
-            )}
-          </>
-        )}
-      </div>
+                  <div className="text-sm text-zinc-500">
+                    pot. payout: {formatMoney(totals.possiblePayout)}
+                  </div>
+                </div>
+
+                {openBets.length ? (
+                  <div className="grid gap-3 lg:grid-cols-2">
+                    {openBets.map((bet) => (
+                      <BetCard key={bet.id} bet={bet} active />
+                    ))}
+                  </div>
+                ) : (
+                  <EmptyState
+                    title="No active positions"
+                    description="You do not have any open bets right now. New bets will appear here until they settle."
+                    action={
+                      <Link
+                        href="/"
+                        className="inline-flex rounded-xl bg-black/30 px-4 py-2 text-sm font-medium text-zinc-300 ring-1 ring-zinc-800 transition-colors hover:bg-zinc-900 hover:text-zinc-100"
+                      >
+                        Browse markets
+                      </Link>
+                    }
+                  />
+                )}
+              </section>
+
+              <section className="mt-10">
+                <h2 className="mb-4 text-2xl font-semibold tracking-tight text-zinc-100">
+                  Past Positions
+                </h2>
+
+                {pastBets.length ? (
+                  <div className="grid gap-3 lg:grid-cols-2">
+                    {pastBets.map((bet) => (
+                      <BetCard key={bet.id} bet={bet} />
+                    ))}
+                  </div>
+                ) : (
+                  <EmptyState
+                    title="No past positions"
+                    description="Settled wins, losses, and voids will appear here after positions close."
+                  />
+                )}
+              </section>
+            </>
+          )}
+        </>
+      )}
     </div>
   );
 }
