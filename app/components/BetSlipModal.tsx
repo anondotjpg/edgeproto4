@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { type CSSProperties, useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "sonner";
 import { usePrivy } from "@privy-io/react-auth";
@@ -62,14 +62,26 @@ type BetSlipModalProps = {
   polymarketTokenId?: string | null;
 };
 
-const ACCOUNT_GRID_CLASS = "grid grid-cols-3 gap-3";
+const ACCOUNT_ROW_CLASS =
+  "flex snap-x gap-3 overflow-x-auto overflow-y-hidden overscroll-x-contain pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden";
 
 const ACCOUNT_CARD_CLASS =
-  "h-[92px] overflow-hidden rounded-2xl border p-3 text-left transition-colors";
+  "h-[92px] snap-start overflow-hidden rounded-2xl border p-3 text-left transition-colors";
 
-const ACCOUNT_SELECT_SHELL_CLASS = "mt-5 h-[122px]";
+const ACCOUNT_CARD_STYLE: CSSProperties = {
+  flex: "0 0 calc((100% - 24px) / 3)",
+};
 
-const ACCOUNT_LIST_CLASS = "mt-3 h-[92px] overflow-hidden";
+const ACCOUNT_SELECT_SHELL_CLASS = "mt-5 h-[126px]";
+
+const ACCOUNT_LIST_CLASS = "mt-3 h-[96px] overflow-hidden";
+
+const QUICK_AMOUNT_OPTIONS = [
+  { label: "25%", value: 0.25 },
+  { label: "50%", value: 0.5 },
+  { label: "75%", value: 0.75 },
+  { label: "100%", value: 1 },
+];
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(false);
@@ -151,7 +163,10 @@ function SkeletonBlock({ className = "" }: { className?: string }) {
 
 function AccountOptionSkeleton() {
   return (
-    <div className={`${ACCOUNT_CARD_CLASS} border-zinc-800 bg-black/30`}>
+    <div
+      style={ACCOUNT_CARD_STYLE}
+      className={`${ACCOUNT_CARD_CLASS} border-zinc-800 bg-black/30`}
+    >
       <div className="flex h-5 items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
           <SkeletonBlock className="h-5 w-full max-w-[150px] bg-zinc-800" />
@@ -198,6 +213,7 @@ function BetSlipContent({
   onClose,
   onToggleAccount,
   onAmountChange,
+  onQuickAmount,
   onPlaceBet,
 }: {
   team: string;
@@ -222,9 +238,13 @@ function BetSlipContent({
   onClose: () => void;
   onToggleAccount: (accountId: string) => void;
   onAmountChange: (value: number | readonly number[]) => void;
+  onQuickAmount: (percent: number) => void;
   onPlaceBet: () => void;
 }) {
   const sliderDisabled = maxBetAmount <= 0;
+  const showQuickAmounts = maxBetAmount > 0 && selectedAccountIds.length > 0;
+  const showScrollHint =
+    ready && authenticated && !isLoadingAccounts && accounts.length > 3;
 
   return (
     <>
@@ -301,13 +321,30 @@ function BetSlipContent({
       )}
 
       <div className={ACCOUNT_SELECT_SHELL_CLASS}>
-        <div className="h-[18px] text-sm font-medium leading-[18px] text-zinc-300">
-          Select account
+        <div className="flex h-[18px] items-center justify-between gap-3">
+          <div className="text-sm font-medium leading-[18px] text-zinc-300">
+            Select account
+          </div>
+
+          <AnimatePresence initial={false}>
+            {showScrollHint ? (
+              <motion.div
+                key="account-scroll-hint"
+                initial={{ opacity: 0, x: 8 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 8 }}
+                transition={{ duration: 0.18, ease: "easeOut" }}
+                className="shrink-0 text-[11px] font-medium leading-[18px] text-zinc-500"
+              >
+                Scroll to view more
+              </motion.div>
+            ) : null}
+          </AnimatePresence>
         </div>
 
         <div className={ACCOUNT_LIST_CLASS}>
           {!ready || isLoadingAccounts ? (
-            <div className={ACCOUNT_GRID_CLASS}>
+            <div className={ACCOUNT_ROW_CLASS}>
               {Array.from({ length: 3 }).map((_, index) => (
                 <AccountOptionSkeleton key={index} />
               ))}
@@ -316,12 +353,12 @@ function BetSlipContent({
             <button
               type="button"
               onClick={login}
-              className="h-full w-full rounded-2xl border border-zinc-800 bg-black/30 p-4 text-left text-sm text-zinc-300"
+              className="h-[92px] w-full rounded-2xl border border-zinc-800 bg-black/30 p-4 text-left text-sm text-zinc-300"
             >
               Sign in to select an account.
             </button>
           ) : accounts.length ? (
-            <div className={ACCOUNT_GRID_CLASS}>
+            <div className={ACCOUNT_ROW_CLASS}>
               {accounts.map((account) => {
                 const selected = selectedAccountIds.includes(account.id);
                 const active = ["active", "active_dev"].includes(
@@ -334,6 +371,7 @@ function BetSlipContent({
                   <button
                     key={account.id}
                     type="button"
+                    style={ACCOUNT_CARD_STYLE}
                     onClick={() => {
                       if (active) onToggleAccount(account.id);
                     }}
@@ -385,59 +423,120 @@ function BetSlipContent({
               })}
             </div>
           ) : (
-            <div className="flex h-full items-center rounded-2xl border border-zinc-800 bg-black/30 p-4 text-sm text-zinc-500">
+            <div className="flex h-[92px] items-center rounded-2xl border border-zinc-800 bg-black/30 p-4 text-sm text-zinc-500">
               No accounts found. Start a challenge first.
             </div>
           )}
         </div>
       </div>
 
-      <div className="mt-5">
-        <div className="flex h-[18px] items-center justify-between gap-3">
-          <span className="text-sm font-medium leading-[18px] text-zinc-300">
-            Bet amount
-          </span>
-
-          <span className="text-[12px] leading-[18px] text-zinc-500">
-            Max{" "}
-            <span className="font-semibold text-zinc-300">
-              {formatMoney(maxBetAmount)}
-            </span>
-          </span>
-        </div>
-
-        <div className="mt-2 rounded-2xl border border-zinc-800 bg-black/30 p-4">
-          <div className="flex items-end justify-between gap-3">
-            <div className="text-2xl font-semibold tracking-tight text-zinc-100">
-              {formatMoney(amountValue)}
+      <motion.div layout className="mt-5 overflow-x-hidden">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <div className="text-sm font-medium leading-none text-zinc-300">
+              Bet amount
             </div>
 
-            <div className="pb-1 text-right text-[12px] text-zinc-500">
-              pot. payout{" "}
+            <motion.div
+              layout
+              key={amountValue}
+              initial={{ opacity: 0.75, y: 2 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.18, ease: "easeOut" }}
+              className="mt-2 text-[34px] font-semibold leading-none tracking-tight text-zinc-100"
+            >
+              {formatMoney(amountValue)}
+            </motion.div>
+          </div>
+
+          <div className="pt-[1px] text-right">
+            <div className="text-[12px] leading-none text-zinc-500">
+              Max{" "}
+              <span className="font-semibold text-zinc-300">
+                {formatMoney(maxBetAmount)}
+              </span>
+            </div>
+
+            <div className="mt-2 text-[12px] leading-none text-zinc-500">
+              Pot. payout{" "}
               <span className="font-semibold text-zinc-300">
                 {possiblePayout}
               </span>
             </div>
           </div>
+        </div>
 
-          <div className="mt-4">
-            <Slider
-              value={amountValue}
-              min={0}
-              max={Math.max(maxBetAmount, 1)}
-              step={1}
-              disabled={sliderDisabled}
-              onValueChange={onAmountChange}
-              className="py-4 [&_[data-slot=slider-range]]:bg-zinc-300 [&_[data-slot=slider-track]]:bg-zinc-700 [&_[data-slot=slider-thumb]]:size-4 [&_[data-slot=slider-thumb]]:border-zinc-300 [&_[data-slot=slider-thumb]]:bg-zinc-100"
-            />
-          </div>
+        <AnimatePresence initial={false}>
+          {showQuickAmounts ? (
+            <motion.div
+              key="quick-amount-options"
+              initial={{ height: 0, opacity: 0, y: -6 }}
+              animate={{ height: "auto", opacity: 1, y: 0 }}
+              exit={{ height: 0, opacity: 0, y: -6 }}
+              transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+              className="overflow-hidden"
+            >
+              <motion.div
+                layout
+                className="mt-4 grid grid-cols-4 gap-2"
+                transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+              >
+                {QUICK_AMOUNT_OPTIONS.map((option, index) => {
+                  const optionAmount = Math.round(maxBetAmount * option.value);
+                  const selected = amountValue === optionAmount;
 
-          <div className="flex items-center justify-between text-[11px] text-zinc-500">
+                  return (
+                    <motion.button
+                      key={option.label}
+                      type="button"
+                      initial={{ opacity: 0, y: 8, scale: 0.98 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 6, scale: 0.98 }}
+                      transition={{
+                        duration: 0.2,
+                        delay: index * 0.025,
+                        ease: [0.22, 1, 0.36, 1],
+                      }}
+                      whileTap={{ scale: 0.96 }}
+                      onClick={() => onQuickAmount(option.value)}
+                      className={[
+                        "h-9 rounded-full text-[13px] font-semibold transition-colors",
+                        selected
+                          ? "bg-zinc-100 text-zinc-950"
+                          : "bg-zinc-900 text-zinc-300 hover:bg-zinc-800",
+                      ].join(" ")}
+                    >
+                      {option.label}
+                    </motion.button>
+                  );
+                })}
+              </motion.div>
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
+
+        <div
+          className="-mx-1 mt-4 overflow-hidden px-5"
+          data-vaul-no-drag=""
+          onPointerDown={(event) => event.stopPropagation()}
+          onTouchStart={(event) => event.stopPropagation()}
+        >
+          <Slider
+            value={amountValue}
+            min={0}
+            max={Math.max(maxBetAmount, 1)}
+            step={1}
+            disabled={sliderDisabled}
+            onValueChange={onAmountChange}
+            className="[&_[data-slot=slider-range]]:bg-zinc-300 [&_[data-slot=slider-track]]:bg-zinc-700 [&_[data-slot=slider-thumb]]:size-4 [&_[data-slot=slider-thumb]]:border-zinc-300 [&_[data-slot=slider-thumb]]:bg-zinc-100"
+          />
+
+          <div className="mt-1.5 flex items-center justify-between text-[11px] text-zinc-500">
             <span>$0</span>
             <span>{formatMoney(maxBetAmount)}</span>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       <AnimatePresence initial={false}>
         {statusMessage ? (
@@ -700,6 +799,11 @@ export default function BetSlipModal({
     setAmount(nextValue > 0 ? String(nextValue) : "");
   }
 
+  function handleQuickAmount(percent: number) {
+    const nextValue = Math.round(maxBetAmount * percent);
+    setAmount(nextValue > 0 ? String(nextValue) : "");
+  }
+
   async function placeBet() {
     if (!ready) return;
 
@@ -827,6 +931,7 @@ export default function BetSlipModal({
       onClose={closeBetSlip}
       onToggleAccount={toggleAccount}
       onAmountChange={handleSliderAmountChange}
+      onQuickAmount={handleQuickAmount}
       onPlaceBet={placeBet}
     />
   );
@@ -840,9 +945,8 @@ export default function BetSlipModal({
           open={open}
           onOpenChange={handleOpenChange}
           repositionInputs={false}
-          handleOnly
         >
-          <DrawerContent className="border-zinc-800 bg-zinc-950 text-white outline-none ring-0 focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 data-[state=open]:outline-none data-[vaul-drawer-direction=bottom]:max-h-[calc(100svh-16px)]">
+          <DrawerContent className="overflow-x-hidden border-zinc-800 bg-zinc-950 text-white outline-none ring-0 focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 data-[state=open]:outline-none data-[vaul-drawer-direction=bottom]:max-h-[calc(100svh-16px)]">
             <DrawerHeader className="sr-only">
               <DrawerTitle>Place Bet</DrawerTitle>
               <DrawerDescription>
@@ -850,20 +954,17 @@ export default function BetSlipModal({
               </DrawerDescription>
             </DrawerHeader>
 
-            <div className="mx-auto w-full max-w-2xl bg-zinc-950 px-5 pb-[max(18px,env(safe-area-inset-bottom))] pt-2">
-              <div
-                data-vaul-handle
-                className="mx-auto mb-5 h-1.5 w-12 shrink-0 rounded-full bg-zinc-800"
-              />
+            <div className="mx-auto w-full max-w-2xl overflow-x-hidden bg-zinc-950 px-5 pb-[max(18px,env(safe-area-inset-bottom))] pt-2">
+              <div className="mx-auto mb-5 h-1.5 w-12 shrink-0 rounded-full bg-zinc-800" />
 
-              <div className="max-h-[calc(100svh-92px)] overflow-y-auto overscroll-contain pb-1">
+              <div className="max-h-[calc(100svh-92px)] overflow-y-auto overflow-x-hidden overscroll-contain pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 {content}
               </div>
             </div>
           </DrawerContent>
         </Drawer>
       ) : open ? (
-        <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/75 px-4 pb-4 sm:items-center sm:pb-0">
+        <div className="fixed inset-0 z-[100] flex items-end justify-center overflow-x-hidden bg-black/75 px-4 pb-4 sm:items-center sm:pb-0">
           <button
             type="button"
             aria-label="Close bet slip"
@@ -871,7 +972,7 @@ export default function BetSlipModal({
             onClick={closeBetSlip}
           />
 
-          <div className="relative w-full max-w-2xl rounded-[28px] border border-zinc-800 bg-zinc-950 p-5 text-white shadow-2xl">
+          <div className="relative w-full max-w-2xl overflow-x-hidden rounded-[28px] border border-zinc-800 bg-zinc-950 p-5 text-white shadow-2xl">
             {content}
           </div>
         </div>
