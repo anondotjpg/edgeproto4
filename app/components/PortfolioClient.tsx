@@ -62,15 +62,13 @@ function formatMoney(value: number | null | undefined) {
 function formatDate(date: string | null | undefined) {
   if (!date) return "—";
 
-  const formatted = new Date(date).toLocaleString("en-US", {
+  return new Date(date).toLocaleString("en-US", {
     timeZone: "America/New_York",
-    month: "short",
+    month: "numeric",
     day: "numeric",
     hour: "numeric",
     minute: "2-digit",
   });
-
-  return `${formatted} EST`;
 }
 
 function formatCompactAccountSize(value: number | null | undefined) {
