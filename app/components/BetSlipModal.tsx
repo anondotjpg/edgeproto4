@@ -221,7 +221,7 @@ function BetSlipContent({
   showCloseButton: boolean;
   onClose: () => void;
   onToggleAccount: (accountId: string) => void;
-  onAmountChange: (value: number | number[]) => void;
+  onAmountChange: (value: number | readonly number[]) => void;
   onPlaceBet: () => void;
 }) {
   const sliderDisabled = maxBetAmount <= 0;
@@ -428,7 +428,7 @@ function BetSlipContent({
               step={1}
               disabled={sliderDisabled}
               onValueChange={onAmountChange}
-              className="py-4 [&_[data-slot=slider-range]]:bg-zinc-100 [&_[data-slot=slider-track]]:bg-zinc-800 [&_[data-slot=slider-thumb]]:size-4 [&_[data-slot=slider-thumb]]:border-zinc-300 [&_[data-slot=slider-thumb]]:bg-zinc-100"
+              className="py-4 [&_[data-slot=slider-range]]:bg-zinc-300 [&_[data-slot=slider-track]]:bg-zinc-700 [&_[data-slot=slider-thumb]]:size-4 [&_[data-slot=slider-thumb]]:border-zinc-300 [&_[data-slot=slider-thumb]]:bg-zinc-100"
             />
           </div>
 
@@ -689,7 +689,7 @@ export default function BetSlipModal({
     );
   }
 
-  function handleSliderAmountChange(value: number | number[]) {
+  function handleSliderAmountChange(value: number | readonly number[]) {
     const rawValue = Array.isArray(value) ? value[0] : value;
     const nextRawValue = Number(rawValue ?? 0);
 
