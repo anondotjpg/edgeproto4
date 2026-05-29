@@ -337,6 +337,11 @@ function BetCard({ bet }: { bet: BetRow }) {
   const pnl = getBetPnl(bet);
   const displayStatus = bet.result ?? bet.status;
   const isOpen = bet.status === "open";
+  const isVoid = bet.status === "void" || displayStatus === "void";
+
+  const resolvedOutcome = isVoid
+    ? "Void: Account failed"
+    : bet.polymarket_winning_outcome;
 
   return (
     <div className="min-h-[154px] rounded-[22px] bg-zinc-950/80 p-4 ring-1 ring-zinc-900">
@@ -394,16 +399,16 @@ function BetCard({ bet }: { bet: BetRow }) {
         </div>
       </div>
 
-      {bet.polymarket_winning_outcome ? (
+      {resolvedOutcome ? (
         <div className="mt-3 rounded-2xl bg-black/30 p-3">
           <div className="text-[11px] text-zinc-600">Resolved outcome</div>
           <div className="mt-1 text-[13px] font-medium leading-[1.2] text-zinc-200">
-            {bet.polymarket_winning_outcome}
+            {resolvedOutcome}
           </div>
         </div>
       ) : null}
 
-      {bet.settlement_reason ? (
+      {!isVoid && bet.settlement_reason ? (
         <div className="mt-3 rounded-2xl bg-black/30 p-3 text-[12px] leading-5 text-zinc-500">
           {bet.settlement_reason}
         </div>
