@@ -2,6 +2,7 @@
 
 import {
   memo,
+  type ChangeEvent,
   type CSSProperties,
   type PointerEvent,
   useCallback,
@@ -634,6 +635,7 @@ function BetSlipControls({
   const holdStartRef = useRef<number | null>(null);
   const holdCompletedRef = useRef(false);
   const [holdProgress, setHoldProgress] = useState(0);
+  const [amountShakeKey, setAmountShakeKey] = useState(0);
 
   const sliderDisabled = maxBetAmount <= 0;
   const showQuickAmounts = maxBetAmount > 0 && selectedAccountIds.length > 0;
@@ -701,6 +703,27 @@ function BetSlipControls({
     clearHold();
   }
 
+  function handleSidebarAmountInputChange(
+    event: ChangeEvent<HTMLInputElement>
+  ) {
+    const rawDigits = event.target.value.replace(/[^\d]/g, "");
+
+    if (!rawDigits) {
+      onAmountChange(0);
+      return;
+    }
+
+    const nextAmount = Number(rawDigits);
+
+    if (maxBetAmount > 0 && nextAmount > maxBetAmount) {
+      onAmountChange(maxBetAmount);
+      setAmountShakeKey((current) => current + 1);
+      return;
+    }
+
+    onAmountChange(nextAmount);
+  }
+
   useEffect(() => {
     if (!mobileLayout || placeBetDisabled) {
       clearHold();
@@ -728,48 +751,108 @@ function BetSlipControls({
       />
 
       <motion.div layout className="mt-5 overflow-x-hidden">
-        <div className="flex items-start justify-between gap-4">
+        {panelMode === "sidebar" ? (
           <div>
-            <div className="text-sm font-medium leading-none text-zinc-300">
-              Bet amount
+            <div className="mb-2 flex items-start justify-between gap-4">
+              <div />
+
+              <div className="pt-[1px] text-right">
+                <div className="text-[12px] leading-none text-zinc-500">
+                  Max{" "}
+                  <span className="font-semibold text-zinc-300">
+                    {formatMoney(maxBetAmount)}
+                  </span>
+                </div>
+
+                <div
+                  aria-hidden={!showPotentialPayout}
+                  className="mt-2 text-[12px] leading-none text-zinc-500"
+                >
+                  Pot. payout{" "}
+                  <span className="font-semibold text-zinc-300">
+                    {possiblePayout}
+                  </span>
+                </div>
+              </div>
             </div>
 
-            <motion.div
-              layout
-              key={amountValue}
-              initial={{ opacity: 0.75, y: 2 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.18, ease: "easeOut" }}
-              className="mt-2 text-[34px] font-semibold leading-none tracking-tight text-zinc-100"
-            >
-              {formatMoney(amountValue)}
-            </motion.div>
-          </div>
+            <div className="flex items-end justify-between gap-4">
+              <div className="pb-2 text-sm font-medium leading-none text-zinc-300">
+                Amount
+              </div>
 
-          <div className="pt-[1px] text-right">
-            <div className="text-[12px] leading-none text-zinc-500">
-              Max{" "}
-              <span className="font-semibold text-zinc-300">
-                {formatMoney(maxBetAmount)}
-              </span>
+              <motion.div
+                key={amountShakeKey}
+                animate={
+                  amountShakeKey > 0
+                    ? { x: [0, -8, 8, -6, 6, 0] }
+                    : { x: 0 }
+                }
+                transition={{ duration: 0.28, ease: "easeOut" }}
+                className="min-w-0 flex-1"
+              >
+                <input
+                  value={
+                    amountValue > 0
+                      ? `$${amountValue.toLocaleString(undefined, {
+                          minimumFractionDigits: 0,
+                          maximumFractionDigits: 0,
+                        })}`
+                      : ""
+                  }
+                  onChange={handleSidebarAmountInputChange}
+                  onFocus={(event) => event.currentTarget.select()}
+                  inputMode="numeric"
+                  placeholder="$0"
+                  className="h-[62px] w-full bg-transparent text-right text-[56px] font-semibold leading-none tracking-tight text-zinc-500 outline-none placeholder:text-zinc-600"
+                />
+              </motion.div>
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <div className="text-sm font-medium leading-none text-zinc-300">
+                Bet amount
+              </div>
+
+              <motion.div
+                layout
+                key={amountValue}
+                initial={{ opacity: 0.75, y: 2 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.18, ease: "easeOut" }}
+                className="mt-2 text-[34px] font-semibold leading-none tracking-tight text-zinc-100"
+              >
+                {formatMoney(amountValue)}
+              </motion.div>
             </div>
 
-            <motion.div
-              animate={{
-                opacity: showPotentialPayout ? 1 : 0,
-                y: showPotentialPayout ? 0 : 3,
-              }}
-              transition={{ duration: 0.18, ease: "easeOut" }}
-              aria-hidden={!showPotentialPayout}
-              className="mt-2 text-[12px] leading-none text-zinc-500"
-            >
-              Pot. payout{" "}
-              <span className="font-semibold text-zinc-300">
-                {possiblePayout}
-              </span>
-            </motion.div>
+            <div className="pt-[1px] text-right">
+              <div className="text-[12px] leading-none text-zinc-500">
+                Max{" "}
+                <span className="font-semibold text-zinc-300">
+                  {formatMoney(maxBetAmount)}
+                </span>
+              </div>
+
+              <motion.div
+                animate={{
+                  opacity: showPotentialPayout ? 1 : 0,
+                  y: showPotentialPayout ? 0 : 3,
+                }}
+                transition={{ duration: 0.18, ease: "easeOut" }}
+                aria-hidden={!showPotentialPayout}
+                className="mt-2 text-[12px] leading-none text-zinc-500"
+              >
+                Pot. payout{" "}
+                <span className="font-semibold text-zinc-300">
+                  {possiblePayout}
+                </span>
+              </motion.div>
+            </div>
           </div>
-        </div>
+        )}
 
         <AnimatePresence initial={false}>
           {showQuickAmounts ? (
@@ -820,27 +903,29 @@ function BetSlipControls({
           ) : null}
         </AnimatePresence>
 
-        <div
-          className="-mx-1 mt-4 overflow-hidden px-5 md:px-[7px]"
-          data-vaul-no-drag=""
-          onPointerDown={(event) => event.stopPropagation()}
-          onTouchStart={(event) => event.stopPropagation()}
-        >
-          <Slider
-            value={amountValue}
-            min={0}
-            max={Math.max(maxBetAmount, 1)}
-            step={1}
-            disabled={sliderDisabled}
-            onValueChange={onAmountChange}
-            className="[&_[data-slot=slider-range]]:bg-zinc-300 [&_[data-slot=slider-track]]:bg-zinc-700 [&_[data-slot=slider-thumb]]:size-4 [&_[data-slot=slider-thumb]]:border-zinc-300 [&_[data-slot=slider-thumb]]:bg-zinc-100"
-          />
+        {panelMode !== "sidebar" ? (
+          <div
+            className="-mx-1 mt-4 overflow-hidden px-5 md:px-[7px]"
+            data-vaul-no-drag=""
+            onPointerDown={(event) => event.stopPropagation()}
+            onTouchStart={(event) => event.stopPropagation()}
+          >
+            <Slider
+              value={amountValue}
+              min={0}
+              max={Math.max(maxBetAmount, 1)}
+              step={1}
+              disabled={sliderDisabled}
+              onValueChange={onAmountChange}
+              className="[&_[data-slot=slider-range]]:bg-zinc-300 [&_[data-slot=slider-track]]:bg-zinc-700 [&_[data-slot=slider-thumb]]:size-4 [&_[data-slot=slider-thumb]]:border-zinc-300 [&_[data-slot=slider-thumb]]:bg-zinc-100"
+            />
 
-          <div className="mt-1.5 flex items-center justify-between text-[11px] text-zinc-500 md:text-[13px]">
-            <span>$0</span>
-            <span>{formatMoney(maxBetAmount)}</span>
+            <div className="mt-1.5 flex items-center justify-between text-[11px] text-zinc-500 md:text-[13px]">
+              <span>$0</span>
+              <span>{formatMoney(maxBetAmount)}</span>
+            </div>
           </div>
-        </div>
+        ) : null}
       </motion.div>
 
       <AnimatePresence initial={false}>
