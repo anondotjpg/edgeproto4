@@ -96,9 +96,10 @@ export default function TopRightAuth() {
   );
 
   const cta = !ready ? (
-    <span className={`${flatPillClassName} bg-zinc-900 text-zinc-400`}>
-      Loading
-    </span>
+    <span
+      aria-label="Loading account controls"
+      className="inline-flex h-9 w-[126px] shrink-0 animate-pulse rounded-full border border-zinc-800 bg-zinc-900"
+    />
   ) : authenticated ? (
     signedInControls
   ) : (
