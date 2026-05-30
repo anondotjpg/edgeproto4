@@ -282,7 +282,7 @@ function DateMarketHeader({ date }: { date: string }) {
         {date}
       </div>
 
-      <div className="flex items-center justify-center pb-0.5 text-[9px] font-medium uppercase tracking-[0.14em] text-zinc-500">
+      <div className="flex items-center justify-center pb-0.5 text-[11px] font-medium uppercase tracking-[0.14em] text-zinc-500">
         <span className="md:hidden">ML</span>
         <span className="hidden md:inline">Moneyline</span>
       </div>
@@ -435,7 +435,7 @@ export default function GamesClient({
           <LeagueTabs leagues={leagues} selectedLeague={selectedLeague} />
         </header>
 
-        <div className="mt-8 grid gap-6 xl:grid-cols-[minmax(0,860px)_420px] xl:items-start xl:justify-center">
+        <div className="mt-4 md:mt-8 grid gap-6 xl:grid-cols-[minmax(0,860px)_420px] xl:items-start xl:justify-center">
           <main className="min-w-0">
             <section className="space-y-4">
               <div className="grid grid-cols-[112px_minmax(0,1fr)_112px] items-end gap-3">
