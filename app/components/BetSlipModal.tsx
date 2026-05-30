@@ -836,12 +836,7 @@ function BetSlipControls({
                 </span>
               </div>
 
-              <motion.div
-                animate={{
-                  opacity: showPotentialPayout ? 1 : 0,
-                  y: showPotentialPayout ? 0 : 3,
-                }}
-                transition={{ duration: 0.18, ease: "easeOut" }}
+              <div
                 aria-hidden={!showPotentialPayout}
                 className="mt-2 text-[12px] leading-none text-zinc-500"
               >
@@ -849,7 +844,7 @@ function BetSlipControls({
                 <span className="font-semibold text-zinc-300">
                   {possiblePayout}
                 </span>
-              </motion.div>
+              </div>
             </div>
           </div>
         )}
