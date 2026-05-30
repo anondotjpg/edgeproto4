@@ -234,8 +234,8 @@ function GameCard({ game }: { game: Game }) {
   const eventHref = `/event/${game.slug}`;
 
   return (
-    <article className="relative rounded-[24px] bg-zinc-900/30 p-4 pb-12">
-      <div className="mb-2 grid grid-cols-[minmax(0,1fr)_96px]">
+    <article className="relative pb-9 md:rounded-[24px] md:bg-zinc-900/30 md:p-4 md:pb-12">
+      <div className="mb-2 grid grid-cols-[minmax(0,1fr)_96px] md:grid-cols-[minmax(0,1fr)_96px]">
         <div className="pl-1 text-[9px] font-medium uppercase tracking-[0.14em] text-zinc-500">
           Teams
         </div>
@@ -278,13 +278,13 @@ function GameCard({ game }: { game: Game }) {
         </div>
       </div>
 
-      <div className="absolute bottom-4 left-4 text-[13px] text-zinc-400">
+      <div className="absolute bottom-0 left-1 text-[13px] text-zinc-400 md:bottom-4 md:left-4">
         {formatGameTime(game.commence_time)}
       </div>
 
       <Link
         href={eventHref}
-        className="absolute bottom-4 right-4 inline-flex items-center gap-1.5 text-[12px] font-medium text-zinc-400 transition-colors hover:text-white"
+        className="absolute bottom-0 right-1 inline-flex items-center gap-1.5 text-[12px] font-medium text-zinc-400 transition-colors hover:text-white md:bottom-4 md:right-4"
       >
         <span>View</span>
         <FiArrowUpRight className="h-3.5 w-3.5" />
@@ -353,7 +353,7 @@ export default async function Home({
                 No active {selectedLeagueMeta.label} markets right now.
               </div>
             ) : (
-              <div className="grid gap-3 lg:grid-cols-2">
+              <div className="grid gap-6 md:gap-3 lg:grid-cols-2">
                 {league.games.map((game) => (
                   <GameCard key={game.id} game={game} />
                 ))}

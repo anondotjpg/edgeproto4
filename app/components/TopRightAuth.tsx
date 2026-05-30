@@ -8,6 +8,7 @@ import { usePrivy } from "@privy-io/react-auth";
 export default function TopRightAuth() {
   const { ready, authenticated, login, logout } = usePrivy();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [pfpLoaded, setPfpLoaded] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -54,18 +55,29 @@ export default function TopRightAuth() {
         <button
           type="button"
           onClick={() => setMenuOpen((open) => !open)}
-          className="flex h-9 w-9 cursor-pointer items-center justify-center"
+          className="relative flex h-9 w-9 cursor-pointer items-center justify-center overflow-hidden rounded-full"
           aria-haspopup="menu"
           aria-expanded={menuOpen}
           aria-label="Open account menu"
         >
+          {!pfpLoaded ? (
+            <span
+              aria-hidden="true"
+              className="absolute inset-0 h-9 w-9 animate-pulse rounded-full border border-zinc-800 bg-zinc-900 md:border-zinc-700"
+            />
+          ) : null}
+
           <Image
             src="/pfp.jpg"
             alt="Account"
             width={40}
             height={40}
             priority
-            className="h-9 w-9 rounded-full border border-zinc-800 object-cover md:border-zinc-700"
+            onLoad={() => setPfpLoaded(true)}
+            className={[
+              "h-9 w-9 rounded-full border border-zinc-800 object-cover transition-opacity duration-200 md:border-zinc-700",
+              pfpLoaded ? "opacity-100" : "opacity-0",
+            ].join(" ")}
           />
         </button>
 
