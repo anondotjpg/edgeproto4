@@ -2,6 +2,7 @@
 
 import {
   type CSSProperties,
+  type PointerEvent,
   useEffect,
   useMemo,
   useRef,
@@ -68,6 +69,8 @@ type BetSlipModalProps = {
   polymarketOutcomeIndex?: number | null;
   polymarketTokenId?: string | null;
 };
+
+const HOLD_TO_PLACE_MS = 1250;
 
 const ACCOUNT_ROW_CLASS =
   "flex gap-3 overflow-x-auto overflow-y-hidden overscroll-x-contain pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden";
@@ -234,13 +237,23 @@ function BetSlipContent({
   onPlaceBet: () => void;
 }) {
   const accountRowRef = useRef<HTMLDivElement | null>(null);
+  const holdFrameRef = useRef<number | null>(null);
+  const holdStartRef = useRef<number | null>(null);
+  const holdCompletedRef = useRef(false);
 
   const [canScrollBack, setCanScrollBack] = useState(false);
   const [canScrollForward, setCanScrollForward] = useState(false);
+  const [holdProgress, setHoldProgress] = useState(0);
 
   const sliderDisabled = maxBetAmount <= 0;
   const showQuickAmounts = maxBetAmount > 0 && selectedAccountIds.length > 0;
   const showPotentialPayout = amountValue > 0 && possiblePayout !== "—";
+
+  const placeBetDisabled =
+    isPlacing ||
+    amountValue <= 0 ||
+    !selectedAccountIds.length ||
+    Boolean(ruleWarning);
 
   function updateAccountScrollState() {
     const row = accountRowRef.current;
@@ -265,6 +278,62 @@ function BetSlipContent({
     });
   }
 
+  function clearHold(resetProgress = true) {
+    if (holdFrameRef.current !== null) {
+      window.cancelAnimationFrame(holdFrameRef.current);
+      holdFrameRef.current = null;
+    }
+
+    holdStartRef.current = null;
+    holdCompletedRef.current = false;
+
+    if (resetProgress) {
+      setHoldProgress(0);
+    }
+  }
+
+  function beginHoldToPlace(event: PointerEvent<HTMLButtonElement>) {
+    if (!mobileLayout || placeBetDisabled) return;
+
+    event.preventDefault();
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+
+    clearHold();
+    holdStartRef.current = performance.now();
+
+    const tick = (now: number) => {
+      if (holdStartRef.current === null) return;
+
+      const elapsed = now - holdStartRef.current;
+      const nextProgress = Math.min(elapsed / HOLD_TO_PLACE_MS, 1);
+
+      setHoldProgress(nextProgress);
+
+      if (nextProgress >= 1) {
+        holdCompletedRef.current = true;
+        clearHold(false);
+        setHoldProgress(1);
+        onPlaceBet();
+
+        window.setTimeout(() => {
+          setHoldProgress(0);
+        }, 180);
+
+        return;
+      }
+
+      holdFrameRef.current = window.requestAnimationFrame(tick);
+    };
+
+    holdFrameRef.current = window.requestAnimationFrame(tick);
+  }
+
+  function cancelHoldToPlace() {
+    if (!mobileLayout || holdCompletedRef.current) return;
+
+    clearHold();
+  }
+
   useEffect(() => {
     updateAccountScrollState();
 
@@ -287,6 +356,18 @@ function BetSlipContent({
       window.cancelAnimationFrame(frame);
     };
   }, [ready, authenticated, isLoadingAccounts, accounts.length]);
+
+  useEffect(() => {
+    if (!mobileLayout || placeBetDisabled) {
+      clearHold();
+    }
+  }, [mobileLayout, placeBetDisabled]);
+
+  useEffect(() => {
+    return () => {
+      clearHold();
+    };
+  }, []);
 
   const showAccountControls =
     ready &&
@@ -605,19 +686,47 @@ function BetSlipContent({
         ) : null}
       </AnimatePresence>
 
-      <button
+      <motion.button
         type="button"
-        onClick={onPlaceBet}
-        disabled={
-          isPlacing ||
-          amountValue <= 0 ||
-          !selectedAccountIds.length ||
-          Boolean(ruleWarning)
-        }
-        className="mt-5 mb-3 h-14 w-full cursor-pointer rounded-2xl bg-zinc-100 text-[16px] font-semibold text-zinc-950 transition-opacity disabled:cursor-not-allowed disabled:opacity-40 md:mb-0 md:h-12 md:text-[15px]"
+        animate={{
+          scale: mobileLayout && holdProgress > 0 ? 0.975 : 1,
+        }}
+        transition={{
+          duration: 0.18,
+          ease: [0.22, 1, 0.36, 1],
+        }}
+        onClick={(event) => {
+          if (mobileLayout) {
+            event.preventDefault();
+            return;
+          }
+
+          onPlaceBet();
+        }}
+        onPointerDown={beginHoldToPlace}
+        onPointerUp={cancelHoldToPlace}
+        onPointerLeave={cancelHoldToPlace}
+        onPointerCancel={cancelHoldToPlace}
+        disabled={placeBetDisabled}
+        className="relative mt-5 mb-3 h-14 w-full cursor-pointer overflow-hidden rounded-2xl bg-zinc-100 text-[16px] font-semibold text-zinc-950 transition-opacity disabled:cursor-not-allowed disabled:opacity-40 md:mb-0 md:h-12 md:text-[15px]"
       >
-        {isPlacing ? "Placing..." : "Place Bet"}
-      </button>
+        {mobileLayout ? (
+          <span
+            className="absolute inset-y-0 left-0 bg-zinc-300"
+            style={{
+              width: `${holdProgress * 100}%`,
+            }}
+          />
+        ) : null}
+
+        <span className="relative z-10">
+          {isPlacing
+            ? "Placing..."
+            : mobileLayout
+              ? "Hold to Place"
+              : "Place Bet"}
+        </span>
+      </motion.button>
     </>
   );
 }
