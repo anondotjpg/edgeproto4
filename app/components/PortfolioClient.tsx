@@ -166,13 +166,13 @@ function TeamLogo({ bet }: { bet: Bet }) {
       <img
         src={bet.team_logo}
         alt={bet.team_logo_alt || bet.selection}
-        className="h-8 w-8 shrink-0 rounded-lg object-contain sm:h-9 sm:w-9"
+        className="h-8 w-8 shrink-0 rounded-md object-contain sm:h-9 sm:w-9"
       />
     );
   }
 
   return (
-    <div className="h-8 w-8 shrink-0 rounded-lg bg-zinc-900 sm:h-9 sm:w-9" />
+    <div className="h-8 w-8 shrink-0 rounded-md bg-zinc-900 sm:h-9 sm:w-9" />
   );
 }
 
