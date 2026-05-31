@@ -275,7 +275,7 @@ export default function OwnedAccountsSection() {
         <h2 className="min-w-0 text-[13px] font-medium uppercase tracking-[0.18em] text-zinc-500">
           Accounts{" "}
           <span className="tracking-normal text-zinc-600">
-            ({showSkeleton ? "..." : showAccounts ? accounts.length : 0})
+            ({showSkeleton ? "0" : showAccounts ? accounts.length : 0})
           </span>
         </h2>
 
