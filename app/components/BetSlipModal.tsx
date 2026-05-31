@@ -11,6 +11,7 @@ import {
   useRef,
   useState,
 } from "react";
+import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import NumberFlow from "@number-flow/react";
 import { toast } from "sonner";
@@ -694,9 +695,14 @@ const AccountSelectSection = memo(function AccountSelectSection({
             })}
           </div>
         ) : (
-          <div className="flex h-[92px] items-center rounded-2xl border border-zinc-800 bg-black/30 p-4 text-sm text-zinc-500">
-            No accounts found. Start a challenge first.
-          </div>
+          <Link
+            href="/accounts"
+            className="flex h-[92px] w-full cursor-pointer items-start rounded-2xl border border-zinc-800 bg-black/30 p-4 text-left text-base text-zinc-300"
+          >
+            No accounts. 
+            <span className="inline underline">Start a challenge</span>
+             first.
+          </Link>
         )}
       </div>
     </div>
