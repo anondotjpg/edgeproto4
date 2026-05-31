@@ -323,7 +323,11 @@ function EmptyState({
 
 
 function StatusText({ status }: { status: string }) {
-  return <div className={COMPACT_BADGE_CLASS}>{resultLabel(status)}</div>;
+  return (
+    <div className="text-sm font-medium text-zinc-400">
+      {resultLabel(status)}
+    </div>
+  );
 }
 
 function TeamLogo({ bet }: { bet: BetRow }) {
