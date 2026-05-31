@@ -878,19 +878,12 @@ function BetSlipControls({
               <div />
 
               <div className="pt-[1px] text-right">
-                <div className="text-[12px] leading-none text-zinc-500">
-                  Max{" "}
-                  <span className="font-semibold text-zinc-300">
-                    <MoneyFlow value={maxBetAmount} />
-                  </span>
-                </div>
-
                 <div
                   aria-hidden={!showPotentialPayout}
-                  className="text-[12px] leading-none text-zinc-500"
+                  className="text-[13px] leading-none text-zinc-500"
                 >
                   Pot. payout{" "}
-                  <span className="font-semibold text-zinc-300">
+                  <span className="text-[14px] font-semibold text-zinc-300">
                     <MoneyFlow value={possiblePayoutValue} />
                   </span>
                 </div>
@@ -943,19 +936,12 @@ function BetSlipControls({
             </div>
 
             <div className="pt-[1px] text-right">
-              <div className="text-[12px] leading-none text-zinc-500">
-                Max{" "}
-                <span className="font-semibold text-zinc-300">
-                  <MoneyFlow value={maxBetAmount} />
-                </span>
-              </div>
-
               <div
                 aria-hidden={!showPotentialPayout}
-                className="text-[12px] leading-none text-zinc-500"
+                className="text-[13px] leading-none text-zinc-500"
               >
                 Pot. payout{" "}
-                <span className="font-semibold text-zinc-300">
+                <span className="text-[14px] font-semibold text-zinc-300">
                   <MoneyFlow value={possiblePayoutValue} />
                 </span>
               </div>
