@@ -555,7 +555,7 @@ export default function PortfolioClient() {
 
   return (
     <div className="mx-auto w-full max-w-7xl px-4 pt-15 pb-8 sm:px-6 md:py-15 md:pb-24">
-      <div className="mb-4 sm:mb-5">
+      <div className="mb-2 sm:mb-3">
         <h1 className="text-[34px] font-semibold tracking-tight text-zinc-100">
           Portfolio
         </h1>
