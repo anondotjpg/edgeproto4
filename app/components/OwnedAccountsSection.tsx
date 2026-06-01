@@ -4,13 +4,9 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { usePrivy } from "@privy-io/react-auth";
 import { PLAN_CONFIG, type PlanKey } from "@/lib/plans";
-import {
-  FiArrowLeft,
-  FiArrowRight,
-  FiArrowUpRight,
-  FiEdit2,
-} from "react-icons/fi";
+import { FiArrowUpRight, FiEdit2 } from "react-icons/fi";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+
 type ExistingAccount = {
   id: string;
   account_name: string | null;
@@ -268,6 +264,7 @@ export default function OwnedAccountsSection() {
   const hasOverflowControls =
     showAccounts && (canScrollBack || canScrollForward || accounts.length > 3);
   const reserveArrowSpace = showSkeleton || hasOverflowControls;
+  const showMobileSwipeHint = showAccounts && accounts.length > 1;
 
   return (
     <div className="mb-6 min-h-[122px] md:pt-[5%] lg:pt-0">
@@ -278,6 +275,12 @@ export default function OwnedAccountsSection() {
             ({showSkeleton ? "0" : showAccounts ? accounts.length : 0})
           </span>
         </h2>
+
+        {showMobileSwipeHint ? (
+          <div className="shrink-0 text-[11px] font-medium text-zinc-500 sm:hidden">
+            Swipe to view more
+          </div>
+        ) : null}
 
         <div
           className={[
