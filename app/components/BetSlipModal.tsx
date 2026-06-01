@@ -433,7 +433,7 @@ function OffsetPlaceBetButton({
         onPointerLeave={onPointerLeave}
         onPointerCancel={onPointerCancel}
         disabled={disabled}
-        className="relative mt-3 mb-7 h-16 w-full cursor-pointer select-none overflow-hidden rounded-2xl border border-zinc-700 bg-zinc-900 text-[16px] font-semibold text-zinc-100 transition-opacity disabled:cursor-not-allowed disabled:opacity-40"
+        className="relative mt-3 mb-4 h-16 w-full cursor-pointer select-none overflow-hidden rounded-2xl border border-zinc-700 bg-zinc-900 text-[16px] font-semibold text-zinc-100 transition-opacity disabled:cursor-not-allowed disabled:opacity-40"
       >
         <span
           className="pointer-events-none absolute inset-y-0 left-0 bg-zinc-800"
@@ -871,7 +871,7 @@ function BetSlipControls({
         onToggleAccount={onToggleAccount}
       />
 
-      <div className="mt-5 overflow-x-hidden">
+      <div className="mt-5 overflow-visible">
         {panelMode === "sidebar" ? (
           <div>
             <div className="mb-2 flex items-start justify-between gap-4">
@@ -996,7 +996,7 @@ function BetSlipControls({
 
         {panelMode !== "sidebar" ? (
           <div
-            className="-mx-1 mt-4 overflow-hidden px-5 md:px-[7px]"
+            className="-mx-1 mt-4 overflow-visible px-1"
             data-vaul-no-drag=""
             onPointerDown={(event) => event.stopPropagation()}
             onTouchStart={(event) => event.stopPropagation()}
