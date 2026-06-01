@@ -283,7 +283,7 @@ function MoneylineCell({
 function DateMarketHeader({ date }: { date: string }) {
   return (
     <div className="grid grid-cols-[minmax(0,1fr)_84px] items-end gap-2 md:pr-3">
-      <div className="text-[20px] font-semibold leading-none tracking-tight text-zinc-100">
+      <div className="text-[18px] font-semibold leading-none tracking-tight text-zinc-100">
         {date}
       </div>
 
