@@ -109,7 +109,7 @@ export default function TopRightAuth() {
                 onClick={() => setMenuOpen(false)}
                 className="flex cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2.5 text-[13px] font-semibold text-zinc-200 transition-colors hover:bg-zinc-800 active:bg-zinc-800"
               >
-                <FiUser className="h-4 w-4 text-zinc-500" />
+                <FiUser className="h-4 w-4 text-current" />
                 <span>Accounts</span>
               </Link>
 
@@ -119,9 +119,9 @@ export default function TopRightAuth() {
                   setMenuOpen(false);
                   logout();
                 }}
-                className="flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-[13px] font-semibold text-zinc-200 transition-colors hover:bg-zinc-800 active:bg-zinc-800 whitespace-nowrap"
+                className="flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-[13px] font-semibold text-red-400 transition-colors hover:bg-zinc-800 active:bg-zinc-800 whitespace-nowrap"
               >
-                <FiLogOut className="h-4 w-4 text-zinc-500" />
+                <FiLogOut className="h-4 w-4 text-current" />
                 <span>Sign out</span>
               </button>
             </div>
@@ -177,7 +177,7 @@ export default function TopRightAuth() {
               onClick={() => setMenuOpen(false)}
               className="flex cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2.5 text-[13px] font-semibold text-zinc-200 transition-colors active:bg-zinc-800"
             >
-              <FiUser className="h-4 w-4 text-zinc-500" />
+              <FiUser className="h-4 w-4 text-current" />
               <span>Accounts</span>
             </Link>
 
@@ -187,9 +187,9 @@ export default function TopRightAuth() {
                 setMenuOpen(false);
                 logout();
               }}
-              className="flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-[13px] font-semibold text-zinc-200 transition-colors active:bg-zinc-800 whitespace-nowrap"
+              className="flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-[13px] font-semibold text-red-400 transition-colors active:bg-zinc-800 whitespace-nowrap"
             >
-              <FiLogOut className="h-4 w-4 text-zinc-500" />
+              <FiLogOut className="h-4 w-4 text-current" />
               <span>Sign out</span>
             </button>
           </div>
