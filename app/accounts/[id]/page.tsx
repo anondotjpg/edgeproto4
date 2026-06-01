@@ -38,6 +38,16 @@ function formatMoney(value: number | null | undefined) {
   })}`;
 }
 
+
+function formatMoneyInteger(value: number | null | undefined) {
+  const safeValue = Number(value ?? 0);
+
+  return `$${safeValue.toLocaleString(undefined, {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  })}`;
+}
+
 function formatSignedMoney(value: number | null | undefined) {
   const safeValue = Number(value ?? 0);
   const prefix = safeValue > 0 ? "+" : "";
@@ -509,7 +519,7 @@ function ActiveBetRow({ bet }: { bet: BetRow }) {
         <MobileBetTop bet={bet} />
         <MobileValueGrid
           status={resultLabel(displayStatus)}
-          stake={formatMoney(bet.stake)}
+          stake={formatMoneyInteger(bet.stake)}
           result={formatMoney(bet.potential_payout)}
           resultLabel="Payout"
         />
@@ -525,7 +535,7 @@ function ActiveBetRow({ bet }: { bet: BetRow }) {
         </div>
 
         <div className="text-right font-semibold text-zinc-100">
-          {formatMoney(bet.stake)}
+          {formatMoneyInteger(bet.stake)}
         </div>
 
         <div className="text-right font-semibold text-zinc-100">
@@ -549,7 +559,7 @@ function PastBetRow({ bet }: { bet: BetRow }) {
         <MobileBetTop bet={bet} />
         <MobileValueGrid
           status={resultLabel(displayStatus)}
-          stake={formatMoney(bet.stake)}
+          stake={formatMoneyInteger(bet.stake)}
           result={pnl === null ? "—" : formatSignedMoney(pnl)}
           resultLabel="P/L"
           resultTone={pnlTone}
@@ -566,7 +576,7 @@ function PastBetRow({ bet }: { bet: BetRow }) {
         </div>
 
         <div className="text-right font-semibold text-zinc-100">
-          {formatMoney(bet.stake)}
+          {formatMoneyInteger(bet.stake)}
         </div>
 
         <div
