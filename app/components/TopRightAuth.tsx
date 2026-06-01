@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { usePrivy } from "@privy-io/react-auth";
 import { FiLogOut, FiUser } from "react-icons/fi";
+import { RiUserFill } from "react-icons/ri";
 
 export default function TopRightAuth() {
   const { ready, authenticated, login, logout } = usePrivy();
@@ -109,7 +110,7 @@ export default function TopRightAuth() {
                 onClick={() => setMenuOpen(false)}
                 className="flex cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2.5 text-[13px] font-medium text-zinc-200 transition-colors hover:bg-zinc-800 active:bg-zinc-800"
               >
-                <FiUser className="h-4 w-4 text-current" />
+                <RiUserFill className="h-4 w-4 text-current" />
                 <span>Accounts</span>
               </Link>
 
@@ -177,7 +178,7 @@ export default function TopRightAuth() {
               onClick={() => setMenuOpen(false)}
               className="flex cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2.5 text-[13px] font-medium text-zinc-200 transition-colors active:bg-zinc-800"
             >
-              <FiUser className="h-4 w-4 text-current" />
+              <RiUserFill className="h-4 w-4 text-current" />
               <span>Accounts</span>
             </Link>
 
