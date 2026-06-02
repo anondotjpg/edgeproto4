@@ -63,26 +63,40 @@ function GoalSkeleton() {
   );
 }
 
+function LossRuleBarsSkeleton() {
+  const barCount = 28;
+
+  return (
+    <div className="flex h-10 w-full items-center sm:h-11">
+      <div
+        className="grid h-7 w-full items-stretch gap-1.5 sm:h-[31px]"
+        style={{ gridTemplateColumns: `repeat(${barCount}, minmax(0, 1fr))` }}
+      >
+        {Array.from({ length: barCount }).map((_, index) => (
+          <SkeletonBlock key={index} className="min-w-0 rounded-full" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function RuleSkeleton({ label }: { label: string }) {
   return (
     <div className="h-[178px] rounded-[26px] bg-zinc-950/80 p-5 ring-1 ring-zinc-900">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <div className="text-[13px] font-medium text-zinc-500">{label}</div>
+          <div className="text-[17px] font-medium leading-none text-zinc-500">
+            {label}
+          </div>
           <SkeletonBlock className="mt-3 h-8 w-36" />
-          <SkeletonBlock className="mt-2 h-4 w-28" />
+          <SkeletonBlock className="mt-2 h-4 w-32" />
         </div>
 
         <SkeletonBlock className="h-5 w-16 rounded-full" />
       </div>
 
-      <div className="mt-5">
-        <div className="mb-2 flex items-center justify-between text-[12px] text-zinc-500">
-          <span>Used</span>
-          <SkeletonBlock className="h-3 w-8" />
-        </div>
-
-        <SkeletonBlock className="h-2 w-full rounded-full" />
+      <div className="mt-3">
+        <LossRuleBarsSkeleton />
       </div>
     </div>
   );
@@ -195,8 +209,8 @@ export default function LoadingAccountPage() {
         </section>
 
         <section className="mt-3 grid h-[368px] gap-3 sm:mt-3 lg:h-[178px] lg:grid-cols-2">
-          <RuleSkeleton label="Daily loss room" />
-          <RuleSkeleton label="Total loss room" />
+          <RuleSkeleton label="Daily loss" />
+          <RuleSkeleton label="Total loss" />
         </section>
 
         <section className="mt-10">

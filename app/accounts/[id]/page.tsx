@@ -254,6 +254,59 @@ function GoalProgressBar({ value }: { value: number }) {
   );
 }
 
+function LossRuleProgressBar({ value }: { value: number }) {
+  const progress = Math.min(Math.max(value, 0), 100);
+  const barCount = 28;
+  const step = 100 / barCount;
+
+  const getBarFill = (index: number) => {
+    const barStart = index * step;
+    const barEnd = barStart + step;
+
+    if (progress >= barEnd) return 1;
+    if (progress <= barStart) return 0;
+
+    return (progress - barStart) / step;
+  };
+
+  const getBarColor = (index: number) => {
+    const ratio = barCount <= 1 ? 1 : index / (barCount - 1);
+    const hue = 48 - ratio * 48;
+
+    return `hsl(${hue} 92% 55%)`;
+  };
+
+  return (
+    <div className="flex h-10 w-full items-center sm:h-11">
+      <div
+        className="grid h-7 w-full items-stretch gap-1.5 sm:h-[31px]"
+        style={{ gridTemplateColumns: `repeat(${barCount}, minmax(0, 1fr))` }}
+      >
+        {Array.from({ length: barCount }).map((_, index) => {
+          const fill = getBarFill(index);
+
+          return (
+            <div
+              key={index}
+              className="relative min-w-0 overflow-hidden rounded-full bg-zinc-900"
+            >
+              <div
+                className="absolute inset-0 rounded-full"
+                style={{ backgroundColor: getBarColor(index) }}
+              />
+
+              <div
+                className="absolute inset-0 rounded-full bg-zinc-950"
+                style={{ opacity: 0.68 * (1 - fill) }}
+              />
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function MetricCard({
   label,
   value,
@@ -301,7 +354,7 @@ function RuleRoomCard({
     return (
       <div className="flex h-[178px] items-center justify-center rounded-[26px] bg-zinc-950/80 p-5 ring-1 ring-zinc-900">
         <div className="text-center">
-          <div className="text-[13px] font-medium text-zinc-500">{title}</div>
+          <div className="text-[17px] font-medium leading-none text-zinc-500">{title}</div>
 
           <div className="mt-3 pb-1 text-[32px] font-semibold leading-[1.08] tracking-tight text-zinc-100">
             Failed
@@ -330,14 +383,14 @@ function RuleRoomCard({
     <div className="h-[178px] rounded-[26px] bg-zinc-950/80 p-5 ring-1 ring-zinc-900">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <div className="text-[13px] font-medium text-zinc-500">{title}</div>
+          <div className="text-[17px] font-medium leading-none text-zinc-500">{title}</div>
 
           <div className="mt-2 pb-1 text-[30px] font-semibold leading-[1.08] tracking-tight text-zinc-100">
             {breached ? "Failed" : formatMoney(safeRoom)}
           </div>
 
           <div className="mt-1 text-[13px] text-zinc-500">
-            {breached ? "limit breached" : "room before fail"}
+            {breached ? "limit breached" : "amount before fail"}
           </div>
         </div>
 
@@ -348,13 +401,8 @@ function RuleRoomCard({
         </div>
       </div>
 
-      <div className="mt-5">
-        <div className="mb-2 flex items-center justify-between text-[12px] text-zinc-500">
-          <span>Used</span>
-          <span>{Math.round(usedPercent)}%</span>
-        </div>
-
-        <ProgressBar value={usedPercent} />
+      <div className="mt-3">
+        <LossRuleProgressBar value={usedPercent} />
       </div>
     </div>
   );
@@ -885,14 +933,14 @@ export default async function AccountPage({ params }: AccountPageProps) {
 
         <section className="mt-3 grid h-[368px] gap-3 sm:mt-3 lg:h-[178px] lg:grid-cols-2">
           <RuleRoomCard
-            title="Daily loss room"
+            title="Daily loss"
             room={dailyRoom}
             limit={dailyLossLimit}
             isAccountFailed={isAccountFailed}
           />
 
           <RuleRoomCard
-            title="Total loss room"
+            title="Total loss"
             room={totalRoom}
             limit={totalLossLimit}
             isAccountFailed={isAccountFailed}
