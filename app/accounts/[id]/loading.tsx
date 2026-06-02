@@ -25,15 +25,17 @@ function TopSummarySkeleton() {
   );
 }
 
-function SegmentedBarsSkeleton({ barCount }: { barCount: number }) {
+function BarsSkeleton({ barCount }: { barCount: number }) {
   return (
-    <div
-      className="grid h-7 w-full items-stretch gap-1.5 sm:h-[31px] lg:h-7"
-      style={{ gridTemplateColumns: `repeat(${barCount}, minmax(0, 1fr))` }}
-    >
-      {Array.from({ length: barCount }).map((_, index) => (
-        <SkeletonBlock key={index} className="min-w-0 rounded-full" />
-      ))}
+    <div className="flex h-10 w-full items-center sm:h-11">
+      <div
+        className="grid h-7 w-full items-stretch gap-1.5 sm:h-[31px]"
+        style={{ gridTemplateColumns: `repeat(${barCount}, minmax(0, 1fr))` }}
+      >
+        {Array.from({ length: barCount }).map((_, index) => (
+          <SkeletonBlock key={index} className="min-w-0 rounded-full" />
+        ))}
+      </div>
     </div>
   );
 }
@@ -41,12 +43,16 @@ function SegmentedBarsSkeleton({ barCount }: { barCount: number }) {
 function ResponsiveBarsSkeleton() {
   return (
     <>
-      <div className="flex h-10 w-full items-center sm:h-11 lg:hidden">
-        <SegmentedBarsSkeleton barCount={28} />
+      <div className="md:hidden">
+        <BarsSkeleton barCount={28} />
       </div>
 
-      <div className="hidden h-8 w-full items-center lg:flex">
-        <SegmentedBarsSkeleton barCount={42} />
+      <div className="hidden md:block xl:hidden">
+        <BarsSkeleton barCount={35} />
+      </div>
+
+      <div className="hidden xl:block">
+        <BarsSkeleton barCount={42} />
       </div>
     </>
   );

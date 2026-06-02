@@ -201,31 +201,46 @@ function ProgressBar({
   );
 }
 
-function SegmentedProgressBar({
+type SegmentedBarTone = "goal" | "loss";
+
+function SegmentedProgressBars({
   value,
-  getBarColor,
+  barCount,
+  tone,
 }: {
   value: number;
-  getBarColor: (index: number, barCount: number) => string;
+  barCount: number;
+  tone: SegmentedBarTone;
 }) {
   const progress = Math.min(Math.max(value, 0), 100);
+  const step = 100 / barCount;
 
-  const renderBars = (barCount: number) => {
-    const step = 100 / barCount;
+  const getBarFill = (index: number) => {
+    const barStart = index * step;
+    const barEnd = barStart + step;
 
-    const getBarFill = (index: number) => {
-      const barStart = index * step;
-      const barEnd = barStart + step;
+    if (progress >= barEnd) return 1;
+    if (progress <= barStart) return 0;
 
-      if (progress >= barEnd) return 1;
-      if (progress <= barStart) return 0;
+    return (progress - barStart) / step;
+  };
 
-      return (progress - barStart) / step;
-    };
+  const getBarColor = (index: number) => {
+    const ratio = barCount <= 1 ? 1 : index / (barCount - 1);
 
-    return (
+    if (tone === "loss") {
+      const hue = 48 - ratio * 48;
+      return `hsl(${hue} 92% 55%)`;
+    }
+
+    const hue = 42 + ratio * 98;
+    return `hsl(${hue} 82% 52%)`;
+  };
+
+  return (
+    <div className="flex h-8 w-full items-center sm:h-9">
       <div
-        className="grid h-6 w-full items-stretch gap-1.5 sm:h-7 lg:h-7"
+        className="grid h-6 w-full items-stretch gap-1.5 sm:h-7"
         style={{ gridTemplateColumns: `repeat(${barCount}, minmax(0, 1fr))` }}
       >
         {Array.from({ length: barCount }).map((_, index) => {
@@ -238,7 +253,7 @@ function SegmentedProgressBar({
             >
               <div
                 className="absolute inset-0 rounded-full"
-                style={{ backgroundColor: getBarColor(index, barCount) }}
+                style={{ backgroundColor: getBarColor(index) }}
               />
 
               <div
@@ -249,48 +264,40 @@ function SegmentedProgressBar({
           );
         })}
       </div>
-    );
-  };
+    </div>
+  );
+}
 
+function ResponsiveProgressBars({
+  value,
+  tone,
+}: {
+  value: number;
+  tone: SegmentedBarTone;
+}) {
   return (
     <>
-      <div className="flex h-8 w-full items-center sm:h-9 lg:hidden">
-        {renderBars(28)}
+      <div className="md:hidden">
+        <SegmentedProgressBars value={value} barCount={28} tone={tone} />
       </div>
 
-      <div className="hidden h-8 w-full items-center lg:flex">
-        {renderBars(42)}
+      <div className="hidden md:block xl:hidden">
+        <SegmentedProgressBars value={value} barCount={35} tone={tone} />
+      </div>
+
+      <div className="hidden xl:block">
+        <SegmentedProgressBars value={value} barCount={42} tone={tone} />
       </div>
     </>
   );
 }
 
 function GoalProgressBar({ value }: { value: number }) {
-  return (
-    <SegmentedProgressBar
-      value={value}
-      getBarColor={(index, barCount) => {
-        const ratio = barCount <= 1 ? 1 : index / (barCount - 1);
-        const hue = 42 + ratio * 98;
-
-        return `hsl(${hue} 82% 52%)`;
-      }}
-    />
-  );
+  return <ResponsiveProgressBars value={value} tone="goal" />;
 }
 
 function LossRuleProgressBar({ value }: { value: number }) {
-  return (
-    <SegmentedProgressBar
-      value={value}
-      getBarColor={(index, barCount) => {
-        const ratio = barCount <= 1 ? 1 : index / (barCount - 1);
-        const hue = 48 - ratio * 48;
-
-        return `hsl(${hue} 92% 55%)`;
-      }}
-    />
-  );
+  return <ResponsiveProgressBars value={value} tone="loss" />;
 }
 
 function MetricCard({
