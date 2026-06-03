@@ -113,6 +113,15 @@ function getBetPnl(bet: Bet) {
   return null;
 }
 
+function getSettledSortTime(bet: Pick<Bet, "settled_at" | "placed_at">) {
+  const timestamp = Date.parse(bet.settled_at ?? bet.placed_at);
+  return Number.isFinite(timestamp) ? timestamp : 0;
+}
+
+function sortPastBetsBySettledAt(bets: Bet[]) {
+  return [...bets].sort((a, b) => getSettledSortTime(b) - getSettledSortTime(a));
+}
+
 function SkeletonBlock({ className = "" }: { className?: string }) {
   return (
     <div className={`animate-pulse rounded-md bg-zinc-900 ${className}`} />
@@ -582,7 +591,7 @@ export default function PortfolioClient() {
       }
 
       setOpenBets(data.openBets ?? []);
-      setPastBets(data.pastBets ?? []);
+      setPastBets(sortPastBetsBySettledAt(data.pastBets ?? []));
     } catch (err) {
       console.error(err);
       setError(
@@ -655,3 +664,4 @@ export default function PortfolioClient() {
     </div>
   );
 }
+///

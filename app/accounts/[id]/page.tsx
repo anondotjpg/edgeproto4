@@ -102,6 +102,15 @@ function getBetPnl(bet: BetRow) {
   return null;
 }
 
+function getSettledSortTime(bet: Pick<BetRow, "settled_at" | "placed_at">) {
+  const timestamp = Date.parse(bet.settled_at ?? bet.placed_at);
+  return Number.isFinite(timestamp) ? timestamp : 0;
+}
+
+function sortPastBetsBySettledAt(bets: BetRow[]) {
+  return [...bets].sort((a, b) => getSettledSortTime(b) - getSettledSortTime(a));
+}
+
 function resultLabel(status: string) {
   if (status === "open") return "Open";
   if (status === "won") return "Won";
@@ -893,7 +902,9 @@ export default async function AccountPage({ params }: AccountPageProps) {
 
   const allBets = (bets ?? []) as BetRow[];
   const openBets = allBets.filter((bet) => bet.status === "open");
-  const pastBets = allBets.filter((bet) => bet.status !== "open");
+  const pastBets = sortPastBetsBySettledAt(
+    allBets.filter((bet) => bet.status !== "open")
+  );
 
   const fallbackAccountTitle =
     plan?.sizeLabel ??
