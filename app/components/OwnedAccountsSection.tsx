@@ -468,7 +468,7 @@ export default function OwnedAccountsSection() {
                           event.stopPropagation();
                           openAccount(account.id);
                         }}
-                        className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-full bg-zinc-900 text-zinc-400 transition-colors group-hover:bg-zinc-800 group-hover:text-zinc-100"
+                        className="flex h-7 w-7 cursor-pointer items-center justify-center text-zinc-500 transition-colors hover:text-zinc-100"
                       >
                         <FiArrowUpRight className="h-3.5 w-3.5" />
                       </button>
