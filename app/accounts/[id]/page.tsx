@@ -347,7 +347,21 @@ function GoalProgressBar({ value }: { value: number }) {
 }
 
 function LossRuleProgressBar({ value }: { value: number }) {
-  return <ResponsiveProgressBars value={value} tone="loss" />;
+  return (
+    <>
+      <div className="md:hidden">
+        <SegmentedProgressBars value={value} barCount={14} tone="loss" />
+      </div>
+
+      <div className="hidden md:block xl:hidden">
+        <SegmentedProgressBars value={value} barCount={35} tone="loss" />
+      </div>
+
+      <div className="hidden xl:block">
+        <SegmentedProgressBars value={value} barCount={42} tone="loss" />
+      </div>
+    </>
+  );
 }
 
 function MetricCard({
@@ -395,17 +409,17 @@ function RuleRoomCard({
 }) {
   if (isAccountFailed) {
     return (
-      <div className="flex min-h-[166px] items-center justify-center rounded-[26px] bg-zinc-950/80 px-5 py-4 ring-1 ring-zinc-900">
+      <div className="flex min-h-[154px] items-center justify-center rounded-[22px] bg-zinc-950/80 px-3 py-4 ring-1 ring-zinc-900 sm:min-h-[166px] sm:rounded-[26px] sm:px-5">
         <div className="text-center">
-          <div className="text-[17px] font-medium leading-tight text-zinc-500">
+          <div className="text-[14px] font-medium leading-tight text-zinc-500 sm:text-[17px]">
             {title}
           </div>
 
-          <div className="mt-2 min-h-[34px] text-[28px] font-semibold leading-tight tracking-tight text-zinc-100">
+          <div className="mt-2 min-h-[28px] text-[22px] font-semibold leading-tight tracking-tight text-zinc-100 sm:min-h-[34px] sm:text-[28px]">
             Failed
           </div>
 
-          <div className="mt-1 text-[13px] leading-tight text-zinc-500">
+          <div className="mt-1 text-[11px] leading-tight text-zinc-500 sm:text-[13px]">
             Loss limit breached
           </div>
         </div>
@@ -424,18 +438,18 @@ function RuleRoomCard({
   const healthLabel = getHealthLabel(room, limit);
 
   return (
-    <div className="flex min-h-[166px] flex-col rounded-[26px] bg-zinc-950/80 px-5 py-4 ring-1 ring-zinc-900">
-      <div className="flex items-start justify-between gap-4">
+    <div className="flex min-h-[154px] flex-col rounded-[22px] bg-zinc-950/80 px-3 py-4 ring-1 ring-zinc-900 sm:min-h-[166px] sm:rounded-[26px] sm:px-5">
+      <div className="flex items-start justify-between gap-3 sm:gap-4">
         <div className="min-w-0">
-          <div className="text-[17px] font-medium leading-tight text-zinc-500">
+          <div className="text-[14px] font-medium leading-tight text-zinc-500 sm:text-[17px]">
             {title}
           </div>
 
-          <div className="mt-2 min-h-[34px] truncate text-[26px] font-semibold leading-tight tracking-tight text-zinc-100 sm:text-[28px]">
+          <div className="mt-2 min-h-[28px] truncate text-[20px] font-semibold leading-tight tracking-tight text-zinc-100 sm:min-h-[34px] sm:text-[28px]">
             {breached ? "Failed" : formatMoney(safeRoom)}
           </div>
 
-          <div className="mt-1 truncate text-[13px] leading-tight text-zinc-500">
+          <div className="mt-1 truncate text-[11px] leading-tight text-zinc-500 sm:text-[13px]">
             {breached ? "limit breached" : "amount before fail"}
           </div>
         </div>
@@ -964,18 +978,28 @@ export default async function AccountPage({ params }: AccountPageProps) {
               </div>
             </div>
 
-            <div className="flex min-h-[166px] flex-col rounded-[26px] bg-zinc-950/80 px-5 py-4 ring-1 ring-zinc-900 lg:ring-0">
+            <div className="flex min-h-[132px] flex-col rounded-[26px] bg-zinc-950/80 px-4 py-4 ring-1 ring-zinc-900 sm:min-h-[166px] sm:px-5 lg:ring-0">
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
                   <div className="text-[17px] font-medium leading-tight text-zinc-500">
                     Goal
                   </div>
 
-                  <div className="mt-2 min-h-[34px] truncate text-[26px] font-semibold leading-tight tracking-tight text-zinc-100 sm:text-[28px]">
+                  <div className="mt-2 hidden min-h-[34px] truncate text-[28px] font-semibold leading-tight tracking-tight text-zinc-100 sm:block">
                     {formatMoney(ruleEquity)}
                   </div>
 
-                  <div className="mt-1 truncate text-[13px] font-medium leading-tight text-zinc-500">
+                  <div className="mt-1 hidden truncate text-[13px] font-medium leading-tight text-zinc-500 sm:block">
+                    of {formatMoney(profitTargetBalance)} goal
+                  </div>
+                </div>
+
+                <div className="min-w-0 pt-0.5 text-right sm:hidden">
+                  <div className="truncate text-[22px] font-semibold leading-tight tracking-tight text-zinc-100">
+                    {formatMoney(ruleEquity)}
+                  </div>
+
+                  <div className="mt-1 truncate text-[12px] font-medium leading-tight text-zinc-500">
                     of {formatMoney(profitTargetBalance)} goal
                   </div>
                 </div>
@@ -988,20 +1012,24 @@ export default async function AccountPage({ params }: AccountPageProps) {
           </div>
         </section>
 
-        <section className="mt-3 grid gap-3 lg:grid-cols-2">
-          <RuleRoomCard
-            title="Daily loss"
-            room={dailyRoom}
-            limit={dailyLossLimit}
-            isAccountFailed={isAccountFailed}
-          />
+        <section className="mt-3 grid grid-cols-2 gap-0 lg:gap-3">
+          <div className="pr-1.5 lg:pr-0">
+            <RuleRoomCard
+              title="Daily loss"
+              room={dailyRoom}
+              limit={dailyLossLimit}
+              isAccountFailed={isAccountFailed}
+            />
+          </div>
 
-          <RuleRoomCard
-            title="Total loss"
-            room={totalRoom}
-            limit={totalLossLimit}
-            isAccountFailed={isAccountFailed}
-          />
+          <div className="pl-1.5 lg:pl-0">
+            <RuleRoomCard
+              title="Total loss"
+              room={totalRoom}
+              limit={totalLossLimit}
+              isAccountFailed={isAccountFailed}
+            />
+          </div>
         </section>
 
         <section className="mt-10">
