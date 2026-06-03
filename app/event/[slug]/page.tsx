@@ -155,6 +155,21 @@ function getLogoFallbackClassName(sportKey: string) {
   return "h-14 w-14 rounded-md border border-zinc-800 bg-zinc-950";
 }
 
+function getTeamDisplayName(team: string, info?: TeamInfo) {
+  const cleanAlias = info?.alias?.trim();
+
+  if (cleanAlias) return cleanAlias;
+
+  return team;
+}
+
+function getMatchupDisplayName(game: Game) {
+  return `${getTeamDisplayName(
+    game.away_team,
+    game.away_team_info
+  )} vs. ${getTeamDisplayName(game.home_team, game.home_team_info)}`;
+}
+
 function TeamPanel({
   team,
   info,
@@ -178,6 +193,7 @@ function TeamPanel({
 
   const selectedTeamLogo = selectedTeamInfo?.logo ?? info?.logo ?? null;
   const selectedTeamLogoAlt = selectedTeamInfo?.name || info?.name || team;
+  const selectedTeamAlias = selectedTeamInfo?.alias ?? info?.alias ?? null;
 
   const polymarketTokenId =
     side === "away"
@@ -186,12 +202,14 @@ function TeamPanel({
 
   const betData = {
     team,
+    teamAlias: selectedTeamAlias,
     gameId: game.id,
     league: game.sport_key,
     market: "h2h",
     odds: americanOdds,
     impliedPercent,
     matchup: `${game.away_team} vs. ${game.home_team}`,
+    matchupAlias: getMatchupDisplayName(game),
     polymarketEventId: game.polymarket?.event_id ?? null,
     polymarketEventSlug: game.polymarket?.event_slug ?? null,
     polymarketMarketId: game.polymarket?.market_id ?? null,

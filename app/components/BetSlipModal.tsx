@@ -55,12 +55,14 @@ type OwnedAccount = {
 
 export type BetSlipData = {
   team: string;
+  teamAlias?: string | null;
   gameId: string;
   league: string;
   market: string;
   odds: string;
   impliedPercent: string;
   matchup: string;
+  matchupAlias?: string | null;
   polymarketEventId?: string | null;
   polymarketEventSlug?: string | null;
   polymarketMarketId?: string | null;
@@ -77,6 +79,40 @@ type BetSlipModalProps = BetSlipData & {
   triggerClassName?: string;
   triggerContentClassName?: string;
 };
+
+function getTeamDisplayName(team: string, teamAlias?: string | null) {
+  const cleanAlias = teamAlias?.trim();
+
+  if (cleanAlias) return cleanAlias;
+
+  return team;
+}
+
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function getMatchupDisplayName({
+  matchup,
+  matchupAlias,
+  team,
+  teamAlias,
+}: {
+  matchup: string;
+  matchupAlias?: string | null;
+  team: string;
+  teamAlias?: string | null;
+}) {
+  const cleanMatchupAlias = matchupAlias?.trim();
+
+  if (cleanMatchupAlias) return cleanMatchupAlias;
+
+  const cleanAlias = teamAlias?.trim();
+
+  if (!cleanAlias) return matchup;
+
+  return matchup.replace(new RegExp(escapeRegExp(team), "g"), cleanAlias);
+}
 
 const HOLD_TO_PLACE_MS = 1250;
 
@@ -290,7 +326,9 @@ function AccountOptionSkeleton() {
 
 const BetSlipHeader = memo(function BetSlipHeader({
   team,
+  teamAlias,
   matchup,
+  matchupAlias,
   odds,
   impliedPercent,
   teamLogo,
@@ -299,7 +337,9 @@ const BetSlipHeader = memo(function BetSlipHeader({
   panelMode,
 }: {
   team: string;
+  teamAlias?: string | null;
   matchup: string;
+  matchupAlias?: string | null;
   odds: string;
   impliedPercent: string;
   teamLogo?: string | null;
@@ -307,6 +347,14 @@ const BetSlipHeader = memo(function BetSlipHeader({
   mobileLayout: boolean;
   panelMode: "modal" | "sidebar";
 }) {
+  const displayTeam = getTeamDisplayName(team, teamAlias);
+  const displayMatchup = getMatchupDisplayName({
+    matchup,
+    matchupAlias,
+    team,
+    teamAlias,
+  });
+
   return (
     <div
       className={[
@@ -322,7 +370,7 @@ const BetSlipHeader = memo(function BetSlipHeader({
         {teamLogo ? (
           <img
             src={teamLogo}
-            alt={teamLogoAlt ?? team}
+            alt={teamLogoAlt ?? displayTeam}
             className={[
               "shrink-0 object-contain rounded-md",
               panelMode === "sidebar" ? "h-11 w-11" : "h-13 w-13",
@@ -341,7 +389,7 @@ const BetSlipHeader = memo(function BetSlipHeader({
                   : "text-2xl leading-tight",
             ].join(" ")}
           >
-            {team}
+            {displayTeam}
           </h2>
 
           <p
@@ -354,7 +402,7 @@ const BetSlipHeader = memo(function BetSlipHeader({
                   : "text-sm leading-tight",
             ].join(" ")}
           >
-            {matchup}
+            {displayMatchup}
           </p>
         </div>
       </div>
@@ -1086,7 +1134,9 @@ const MemoBetSlipControls = memo(BetSlipControls, (prev, next) => {
 
 function BetSlipContent({
   team,
+  teamAlias,
   matchup,
+  matchupAlias,
   odds,
   impliedPercent,
   teamLogo,
@@ -1113,7 +1163,9 @@ function BetSlipContent({
   onPlaceBet,
 }: {
   team: string;
+  teamAlias?: string | null;
   matchup: string;
+  matchupAlias?: string | null;
   odds: string;
   impliedPercent: string;
   teamLogo?: string | null;
@@ -1143,7 +1195,9 @@ function BetSlipContent({
     <>
       <BetSlipHeader
         team={team}
+        teamAlias={teamAlias}
         matchup={matchup}
+        matchupAlias={matchupAlias}
         odds={odds}
         impliedPercent={impliedPercent}
         teamLogo={teamLogo}
@@ -1460,7 +1514,10 @@ export function BetSlipPanel({
       }
 
       toast("Bet placed", {
-        description: `${formatMoney(stake)} on ${currentBet.team}`,
+        description: `${formatMoney(stake)} on ${getTeamDisplayName(
+          currentBet.team,
+          currentBet.teamAlias
+        )}`,
       });
 
       setAmount("");
@@ -1486,7 +1543,9 @@ export function BetSlipPanel({
   return (
     <BetSlipContent
       team={bet.team}
+      teamAlias={bet.teamAlias}
       matchup={bet.matchup}
+      matchupAlias={bet.matchupAlias}
       odds={bet.odds}
       impliedPercent={bet.impliedPercent}
       teamLogo={bet.teamLogo}

@@ -47,6 +47,10 @@ type TeamInfo = {
   logo?: string;
 };
 
+type BetSlipDataWithTeamAlias = BetSlipData & {
+  teamAlias?: string | null;
+};
+
 function getMarket(bookmaker: Bookmaker | undefined, marketKey: string) {
   return bookmaker?.markets.find((market) => market.key === marketKey);
 }
@@ -98,6 +102,21 @@ function getTeamTicker(team: string, info?: TeamInfo) {
   }
 
   return team.slice(0, 3).toUpperCase();
+}
+
+function getTeamDisplayName(team: string, info?: TeamInfo) {
+  const cleanAlias = info?.alias?.trim();
+
+  if (cleanAlias) return cleanAlias;
+
+  return team;
+}
+
+function getMatchupDisplayName(game: Game) {
+  return `${getTeamDisplayName(
+    game.away_team,
+    game.away_team_info
+  )} vs. ${getTeamDisplayName(game.home_team, game.home_team_info)}`;
 }
 
 function getGameDateKey(date: string) {
@@ -183,7 +202,7 @@ function buildBetData({
   outcome?: OddsOutcome;
   side: "away" | "home";
   info?: TeamInfo;
-}): BetSlipData {
+}): BetSlipDataWithTeamAlias {
   const odds = formatPrice(outcome?.price);
   const impliedPercent = formatImpliedPercent(outcome?.price);
 
@@ -200,6 +219,7 @@ function buildBetData({
     odds,
     impliedPercent,
     matchup: `${game.away_team} vs. ${game.home_team}`,
+    matchupAlias: getMatchupDisplayName(game),
     polymarketEventId: game.polymarket?.event_id ?? null,
     polymarketEventSlug: game.polymarket?.event_slug ?? null,
     polymarketMarketId: game.polymarket?.market_id ?? null,
@@ -208,6 +228,7 @@ function buildBetData({
     polymarketOutcome: team,
     polymarketOutcomeIndex: side === "away" ? 0 : 1,
     polymarketTokenId: polymarketTokenId ?? null,
+    teamAlias: info?.alias ?? null,
     teamLogo: info?.logo ?? null,
     teamLogoAlt: info?.name ?? team,
   };
@@ -283,7 +304,7 @@ function MobileMoneylineModalButton({
   betData,
   ticker,
 }: {
-  betData: BetSlipData;
+  betData: BetSlipDataWithTeamAlias;
   ticker: string;
 }) {
   return (
@@ -325,7 +346,7 @@ function MoneylineCell({
   outcome?: OddsOutcome;
   side: "away" | "home";
   selected: boolean;
-  onSelect: (data: BetSlipData) => void;
+  onSelect: (data: BetSlipDataWithTeamAlias) => void;
 }) {
   const teamInfo = side === "away" ? game.away_team_info : game.home_team_info;
   const betData = buildBetData({ game, team, outcome, side, info: teamInfo });
@@ -393,8 +414,8 @@ function GameCard({
   onSelectBet,
 }: {
   game: Game;
-  selectedBet: BetSlipData | null;
-  onSelectBet: (data: BetSlipData) => void;
+  selectedBet: BetSlipDataWithTeamAlias | null;
+  onSelectBet: (data: BetSlipDataWithTeamAlias) => void;
 }) {
   const bookmaker = game.bookmakers[0];
   const h2h = getMarket(bookmaker, "h2h")?.outcomes;
@@ -532,7 +553,7 @@ export default function GamesClient({
     });
   }, [league]);
 
-  const [selectedBet, setSelectedBet] = useState<BetSlipData | null>(firstBet);
+  const [selectedBet, setSelectedBet] = useState<BetSlipDataWithTeamAlias | null>(firstBet);
 
   const groupedGames = useMemo(() => {
     const groups: {
