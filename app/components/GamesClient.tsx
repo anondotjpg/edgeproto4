@@ -260,11 +260,14 @@ function TeamRow({
           {info?.name || team}
         </div>
 
-        {info?.record ? (
-            <div className="mt-0.5 truncate text-[13px] leading-none text-zinc-500 xl:text-[12px]">
-                {info.record}
-            </div>
-        ) : null}
+        <div
+          className={[
+            "mt-0.5 h-4 truncate text-[13px] leading-4 text-zinc-500 xl:text-[12px]",
+            info?.record ? "" : "invisible",
+          ].join(" ")}
+        >
+          {info?.record || "—"}
+        </div>
       </div>
     </div>
   );
